@@ -120,19 +120,36 @@ def load_backtest(ticker: str, period: str, n_states: int) -> tuple:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_market_cap(ticker: str) -> str:
-    """Fetch current market cap string (cached separately — slower API)."""
+def fetch_circ_supply(ticker: str) -> str:
+    """
+    Fetch Market Cap (Price × Circulating Supply) from yfinance.
+    Uses .info['marketCap'] which is reliably populated for crypto tickers.
+    Falls back to fast_info.market_cap, then price × shares_outstanding.
+    """
     try:
-        info = yf.Ticker(ticker).fast_info
-        mcap = getattr(info, "market_cap", None)
-        if mcap is None or mcap == 0:
+        info = yf.Ticker(ticker).info
+
+        # Primary: marketCap field from full info dict
+        mcap = info.get("marketCap") or info.get("market_cap")
+
+        # Fallback: compute from current price × circulating supply
+        if not mcap:
+            price  = info.get("regularMarketPrice") or info.get("currentPrice")
+            supply = info.get("circulatingSupply")
+            if price and supply:
+                mcap = price * supply
+
+        if not mcap or mcap == 0:
             return "N/A"
+
         if mcap >= 1e12:
             return f"${mcap/1e12:.2f}T"
         elif mcap >= 1e9:
             return f"${mcap/1e9:.2f}B"
+        elif mcap >= 1e6:
+            return f"${mcap/1e6:.2f}M"
         else:
-            return f"${mcap/1e6:.0f}M"
+            return f"${mcap:,.0f}"
     except Exception:
         return "N/A"
 
@@ -142,20 +159,18 @@ def fetch_market_cap(ticker: str) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def make_sparkline(prices: pd.Series, positive: bool) -> go.Figure:
-    """Tiny borderless line chart for ticker cards (7-day price trend)."""
+    """Tiny borderless single line chart for ticker cards (7-day price trend)."""
     color = "#00c96a" if positive else "#e03535"
     fig = go.Figure(go.Scatter(
         x = prices.index,
         y = prices.values,
         mode      = "lines",
-        line      = dict(color=color, width=1.8),
-        fill      = "tozeroy",
-        fillcolor = color.replace(")", ",0.10)").replace("rgb", "rgba"),
+        line      = dict(color=color, width=1.2),
         showlegend = False,
         hovertemplate = "%{y:.2f}<extra></extra>",
     ))
     fig.update_layout(
-        height      = 55,
+        height      = 35,
         margin      = dict(l=0, r=0, t=0, b=0),
         xaxis       = dict(visible=False),
         yaxis       = dict(visible=False),
@@ -406,6 +421,8 @@ def style_summary(df: pd.DataFrame):
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
 
+st.markdown("# HMM Quant Trades")
+
 tab_dashboard, tab_backtest, tab_readme = st.tabs(
     ["📊 Dashboard", "📋 Backtest", "📖 README"]
 )
@@ -449,7 +466,7 @@ with tab_dashboard:
 
         pct_24h = safe_pct(24)
         pct_7d  = safe_pct(168)
-        mcap    = fetch_market_cap(ticker)
+        mcap    = fetch_circ_supply(ticker)
 
         # 7-day sparkline (last 168 hourly bars)
         spark_prices = df_t["Close"].iloc[-168:]
@@ -465,8 +482,87 @@ with tab_dashboard:
             )
             c1, c2 = st.columns(2)
             c1.metric("7d Change",   f"{pct_7d:+.2f}%")
-            c2.metric("Market Cap",  mcap)
+            c2.metric("Market Cap", mcap)
             st.plotly_chart(spark_fig, use_container_width=True, key=f"spark_{ticker}")
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # OVERALL MARKET SENTIMENT GAUGE
+    # Scores each asset: Bull = +1, Neutral = 0, Bear = -1
+    # Averages across all 4 tickers → maps to 0–100 for the gauge needle.
+    # Green zone (67–100) = broadly bullish market
+    # Grey  zone (33–67)  = mixed / neutral
+    # Red   zone (0–33)   = broadly bearish market
+    # ══════════════════════════════════════════════════════════════════════════
+    regime_scores = []
+    for t in TICKERS:
+        if t in all_data:
+            reg = all_data[t]["df"]["Regime"].iloc[-1]
+            if reg == "Bull":
+                regime_scores.append(1)
+            elif reg == "Bear":
+                regime_scores.append(-1)
+            else:
+                regime_scores.append(0)
+
+    if regime_scores:
+        avg_score   = sum(regime_scores) / len(regime_scores)   # -1 to +1
+        gauge_value = (avg_score + 1) / 2 * 100                 # 0 to 100
+
+        if gauge_value >= 67:
+            sentiment_label = "Bullish"
+            needle_color    = "#00c96a"
+        elif gauge_value <= 33:
+            sentiment_label = "Bearish"
+            needle_color    = "#e03535"
+        else:
+            sentiment_label = "Neutral"
+            needle_color    = "#888888"
+
+        gauge_fig = go.Figure(go.Indicator(
+            mode  = "gauge+number+delta",
+            value = gauge_value,
+            title = {"text": f"Overall Market Sentiment — <b>{sentiment_label}</b>",
+                     "font": {"size": 15}},
+            delta = {"reference": 50, "increasing": {"color": "#00c96a"},
+                     "decreasing": {"color": "#e03535"}},
+            number= {"suffix": "", "font": {"size": 28}, "valueformat": ".0f"},
+            gauge = {
+                "axis": {"range": [0, 100], "tickwidth": 1,
+                         "tickcolor": "#555", "tickvals": [0, 33, 50, 67, 100],
+                         "ticktext": ["Bear", "", "Neutral", "", "Bull"]},
+                "bar":  {"color": needle_color, "thickness": 0.25},
+                "bgcolor": "rgba(0,0,0,0)",
+                "borderwidth": 0,
+                "steps": [
+                    {"range": [0,  33], "color": "rgba(224,53,53,0.18)"},
+                    {"range": [33, 67], "color": "rgba(100,100,100,0.12)"},
+                    {"range": [67,100], "color": "rgba(0,201,106,0.18)"},
+                ],
+                "threshold": {
+                    "line":  {"color": "#ffffff", "width": 2},
+                    "thickness": 0.75,
+                    "value": 50,
+                },
+            },
+        ))
+        gauge_fig.update_layout(
+            height        = 220,
+            margin        = dict(l=30, r=30, t=40, b=10),
+            paper_bgcolor = "rgba(0,0,0,0)",
+            font          = {"color": "#e0e0e0"},
+        )
+
+        bull_count = regime_scores.count(1)
+        bear_count = regime_scores.count(-1)
+        neut_count = regime_scores.count(0)
+
+        g_left, g_mid, g_right = st.columns([1, 2, 1])
+        with g_mid:
+            st.plotly_chart(gauge_fig, use_container_width=True, key="market_gauge")
+            st.caption(
+                f"Based on HMM regime across all 4 assets  ·  "
+                f"🟢 Bull: {bull_count}  ⚪ Neutral: {neut_count}  🔴 Bear: {bear_count}"
+            )
 
     st.divider()
 
@@ -777,7 +873,30 @@ Changing any control triggers a full re-run with 1-hour cache.
 
 ---
 
-## 8. Data Sources & References
+## 8. Market Cap — What It Shows
+
+The **Market Cap** figure displayed on each ticker card is calculated as:
+
+> **Market Cap = Current Price × Circulating Supply**
+
+This is the total market value of all coins currently in circulation — analogous
+to *free-float market capitalisation* in equity markets.
+
+| Term | Definition |
+|---|---|
+| **Circulating Supply** | Coins that are publicly available and actively traded (excludes locked, reserved, or not-yet-minted coins) |
+| **Current Price** | Latest hourly close price from Yahoo Finance |
+| **Market Cap** | Price × Circulating Supply — a measure of the asset's total economic weight |
+
+Values are sourced from `yfinance` (`Ticker.info['marketCap']`) and displayed
+in abbreviated form: **T** = trillion, **B** = billion, **M** = million.
+
+> Note: crypto circulating supply figures can vary across data providers
+> due to differing definitions of "locked" vs "available" coins.
+
+---
+
+## 9. Data Sources & References
 
 | Source | Purpose |
 |---|---|
@@ -789,7 +908,7 @@ Changing any control triggers a full re-run with 1-hour cache.
 
 ---
 
-## 9. Limitations & Disclaimer
+## 10. Limitations & Disclaimer
 
 > ⚠️ **This app is for educational and research purposes only.
 > It does not constitute financial advice. Past backtest performance
