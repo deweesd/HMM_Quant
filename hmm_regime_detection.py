@@ -80,8 +80,8 @@ def get_cmap(name, n=None):
 TICKERS      = ["BTC-USD", "ETH-USD", "SOL-USD", "ADA-USD"]
 TICKER_NAMES = ["BTC",     "ETH",     "SOL",     "ADA"]
 
-N_STATES    = 7          # number of HMM hidden states (market regimes)
-PLOT_HOURS  = 500        # how many trailing hours to show in the visual
+N_STATES    = 8          # number of HMM hidden states (market regimes)
+PLOT_HOURS  = 750        # how many trailing hours to show in the visual
 RANDOM_SEED = 42
 
 print(f"Python  {sys.version.split()[0]}  |  "
