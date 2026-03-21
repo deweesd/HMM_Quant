@@ -480,9 +480,8 @@ with tab_dashboard:
                 delta = f"{pct_24h:+.2f}% (24h)",
                 delta_color = "normal",
             )
-            c1, c2 = st.columns(2)
-            c1.metric("7d Change",   f"{pct_7d:+.2f}%")
-            c2.metric("Market Cap", mcap)
+            st.metric("7d Change",  f"{pct_7d:+.2f}%")
+            st.metric("Market Cap", mcap)
             st.plotly_chart(spark_fig, use_container_width=True, key=f"spark_{ticker}")
 
     # ══════════════════════════════════════════════════════════════════════════
