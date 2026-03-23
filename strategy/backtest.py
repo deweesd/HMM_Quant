@@ -62,7 +62,7 @@ def run_backtest(
 
     Parameters
     ──────────
-    df               — output of data_prep.get_ticker_data()['df']
+    df               — output of strategy.signals.get_ticker_data()['df']
                        must contain: Close, Regime, Signal, Confirmations
     initial_capital  — starting cash in USD (default $20,000)
     leverage         — simulated leverage multiplier (default 1.5×)
