@@ -1,11 +1,10 @@
-# Regime-Based Trading App — Python 3.12+
+# Regime-Based Trading App
 # Install with: pip install -r requirements.txt
 
+streamlit>=1.35.0
+plotly>=5.20.0
 yfinance>=0.2.40
 hmmlearn>=0.3.0
 scikit-learn>=1.3.0
 numpy>=1.26.0
 pandas>=2.0.0
-matplotlib>=3.7.0
-streamlit>=1.35.0
-plotly>=5.20.0
