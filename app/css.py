@@ -174,13 +174,42 @@ hr { display: none !important; }
   background: var(--accent-glow) !important;
   border-color: var(--accent) !important;
 }
-/* Align the last column of the topbar to the right */
+/* Align the last two columns of the topbar to the right */
 [data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:last-child {
+  [data-testid="stColumn"]:last-child,
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:nth-last-child(2) {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
   padding-top: 4px !important;
+}
+
+/* ── GitHub icon button ──────────────────────────────────────────── */
+.hmm-topbar-icon-col {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding-top: 2px;
+}
+.hmm-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--t2);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.hmm-icon-btn:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent-lt);
 }
 
 /* ── Hero Signal Banner ──────────────────────────────────────────── */
