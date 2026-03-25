@@ -145,6 +145,44 @@ section[data-testid="stMain"] {
 /* Remove dividers (they are deleted from code, but guard any that remain) */
 hr { display: none !important; }
 
+/* ── Topbar theme-toggle button ──────────────────────────────────── */
+/* Targets the last column of the very first stHorizontalBlock (the topbar row) */
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:last-child
+  [data-testid="baseButton-secondary"] {
+  width: 36px !important;
+  height: 36px !important;
+  min-height: unset !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background: var(--bg3) !important;
+  border: 1px solid var(--border2) !important;
+  color: var(--t1) !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: var(--transition) !important;
+  box-shadow: none !important;
+  float: right;
+}
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:last-child
+  [data-testid="baseButton-secondary"]:hover {
+  background: var(--accent-glow) !important;
+  border-color: var(--accent) !important;
+}
+/* Align the last column of the topbar to the right */
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:last-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding-top: 4px !important;
+}
+
 /* ── Hero Signal Banner ──────────────────────────────────────────── */
 .hmm-hero {
   border-radius: var(--radius);
@@ -476,6 +514,60 @@ body {
   --bear:        #dc2626;
   --bear-bg:     rgba(220,38,38,0.08);
   --shadow:      0 2px 8px rgba(79,70,229,0.08), 0 0 1px rgba(79,70,229,0.12);
+}
+
+/* ── Streamlit native element overrides for light mode ─────────── */
+[data-testid="stAppViewContainer"],
+section[data-testid="stMain"],
+.block-container {
+  background: var(--bg0) !important;
+}
+
+/* Markdown headings and body text */
+.stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+.stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+  color: var(--t1) !important;
+}
+.stMarkdown p, .stMarkdown li, .stMarkdown td, .stMarkdown th {
+  color: var(--t2) !important;
+}
+
+/* Streamlit generic text / caption / label */
+.stText, .stCaption, [data-testid="stCaptionContainer"] {
+  color: var(--t3) !important;
+}
+label, .stWidgetLabel { color: var(--t2) !important; }
+
+/* Tab labels */
+[data-testid="stTabs"] [data-baseweb="tab"] {
+  color: var(--t2) !important;
+}
+[data-testid="stTabs"] [aria-selected="true"] {
+  color: var(--accent) !important;
+  background: var(--accent-glow) !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+  background: var(--bg1) !important;
+}
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] .stWidgetLabel {
+  color: var(--t3) !important;
+}
+
+/* Metric */
+[data-testid="stMetric"] { background: var(--bg2) !important; }
+[data-testid="stMetricValue"] { color: var(--t1) !important; }
+[data-testid="stMetricLabel"] { color: var(--t3) !important; }
+
+/* DataFrames */
+[data-testid="stDataFrame"] { background: var(--bg2) !important; }
+
+/* Expander */
+[data-testid="stExpander"] {
+  background: var(--bg2) !important;
+  border-color: var(--border) !important;
 }
 </style>
 """

@@ -54,7 +54,9 @@ if "light_mode" not in st.session_state:
 if st.session_state.light_mode:
     st.markdown(LIGHT_MODE_CSS, unsafe_allow_html=True)
 
-st.markdown("""
+_topbar_logo, _topbar_btn = st.columns([14, 1])
+with _topbar_logo:
+    st.markdown("""
 <div style="display:flex; align-items:center; padding:10px 0 14px;
             border-bottom:1px solid var(--border); margin-bottom:8px;">
   <div style="font-size:18px; font-weight:700; letter-spacing:-0.3px; color:var(--t1);">
@@ -62,6 +64,11 @@ st.markdown("""
   </div>
 </div>
 """, unsafe_allow_html=True)
+with _topbar_btn:
+    _btn_icon = "☀️" if st.session_state.light_mode else "🌙"
+    if st.button(_btn_icon, key="theme_btn", help="Toggle dark / light mode"):
+        st.session_state.light_mode = not st.session_state.light_mode
+        st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -138,13 +145,6 @@ with st.sidebar:
                 )
                 rows.append({"gain_pct": gp, "sell_fraction": sf / 100.0})
             user_exit_ladder = rows
-
-    st.divider()
-    st.session_state.light_mode = st.toggle(
-        "☀️ Light mode",
-        value=st.session_state.light_mode,
-        help="Switch between dark and light theme.",
-    )
 
     st.caption("Data via yfinance · Model via hmmlearn")
     st.caption("For educational purposes only.")
