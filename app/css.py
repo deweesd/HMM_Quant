@@ -145,8 +145,11 @@ section[data-testid="stMain"] {
 /* Remove dividers (they are deleted from code, but guard any that remain) */
 hr { display: none !important; }
 
-/* ── Topbar theme-toggle button ──────────────────────────────────── */
-/* Targets the last column of the very first stHorizontalBlock (the topbar row) */
+/* ── Topbar icon buttons (hamburger, github, theme toggle) ───────── */
+/* Shared style: first col (hamburger) and last col (theme toggle) */
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:first-child
+  [data-testid="baseButton-secondary"],
 [data-testid="stHorizontalBlock"]:first-of-type
   [data-testid="stColumn"]:last-child
   [data-testid="baseButton-secondary"] {
@@ -166,15 +169,25 @@ hr { display: none !important; }
   justify-content: center !important;
   transition: var(--transition) !important;
   box-shadow: none !important;
-  float: right;
 }
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:first-child
+  [data-testid="baseButton-secondary"]:hover,
 [data-testid="stHorizontalBlock"]:first-of-type
   [data-testid="stColumn"]:last-child
   [data-testid="baseButton-secondary"]:hover {
   background: var(--accent-glow) !important;
   border-color: var(--accent) !important;
 }
-/* Align the last two columns of the topbar to the right */
+/* First column (hamburger): left-aligned */
+[data-testid="stHorizontalBlock"]:first-of-type
+  [data-testid="stColumn"]:first-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: 4px !important;
+}
+/* Last two columns (github + theme toggle): right-aligned */
 [data-testid="stHorizontalBlock"]:first-of-type
   [data-testid="stColumn"]:last-child,
 [data-testid="stHorizontalBlock"]:first-of-type
@@ -481,6 +494,21 @@ hr { display: none !important; }
   font-size:12px; color:var(--t2); line-height:1.6;
 }
 
+/* ── Section divider (Live tab spacing) ──────────────────────────── */
+.hmm-section-gap {
+  height: 28px;
+  border-top: 1px solid var(--border);
+  margin: 8px 0 4px;
+}
+.hmm-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin: 0 0 10px;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 html, body { overflow-x: hidden; max-width: 100vw; }
 section[data-testid="stMain"] { overflow-x: hidden; }
@@ -520,6 +548,15 @@ function toggleHmmTheme() {
   }
 }
 </script>
+"""
+
+SIDEBAR_HIDDEN_CSS = """
+<style>
+/* ── Sidebar hidden — injected when st.session_state.sidebar_visible is False ── */
+[data-testid="stSidebar"]               { display: none !important; }
+[data-testid="stSidebarCollapsedControl"]{ display: none !important; }
+section[data-testid="stMain"]           { margin-left: 0 !important; }
+</style>
 """
 
 LIGHT_MODE_CSS = """
