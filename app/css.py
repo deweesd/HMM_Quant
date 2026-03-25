@@ -353,6 +353,27 @@ hr { display: none !important; }
 .hmm-metric-ctx { font-size:11px; color:var(--t3); }
 .hmm-metric-ctx.pos { color:var(--bull); }
 .hmm-metric-ctx.neg { color:var(--bear); }
+
+/* ── Chart Card Wrapper ──────────────────────────────────────────── */
+.hmm-chart-card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+}
+.hmm-chart-head {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.hmm-chart-title { font-size:13.5px; font-weight:600; color:var(--t1); }
+.hmm-chart-badges { display:flex; gap:7px; }
+.hmm-badge {
+  font-size:11px; padding:3px 8px; border-radius:6px;
+  font-weight:500;
+}
+.hmm-badge-ema20  { background:rgba(245,166,35,.12); color:#f5a623; }
+.hmm-badge-ema200 { background:rgba(123,104,238,.12); color:#7b68ee; }
+.hmm-badge-vol    { background:var(--bg3); color:var(--t3); }
+.hmm-badge-strat  { background:rgba(0,201,106,.12); color:var(--bull); }
+.hmm-badge-bh     { background:rgba(123,104,238,.12); color:#7b68ee; }
 </style>
 
 <script>

@@ -366,8 +366,8 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
         ),
         xaxis_rangeslider_visible = False,
         height      = 560,
-        paper_bgcolor = "#0f1117",
-        plot_bgcolor  = "#0f1117",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor  = "rgba(0,0,0,0)",
         font          = dict(color="#e0e0e0"),
         legend        = dict(
             orientation = "h",
@@ -440,8 +440,8 @@ def build_equity_chart(equity: pd.Series, bh: pd.Series, ticker: str) -> go.Figu
     fig.update_layout(
         title        = "Portfolio Equity vs Buy & Hold",
         height       = 380,
-        paper_bgcolor = "#0f1117",
-        plot_bgcolor  = "#0f1117",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor  = "rgba(0,0,0,0)",
         font          = dict(color="#e0e0e0"),
         yaxis_title   = "Portfolio Value ($)",
         xaxis_title   = "Date",
@@ -818,6 +818,19 @@ with tab_dashboard:
     if selected_ticker in all_data:
         df_plot = all_data[selected_ticker]["df"].tail(chart_bars)
         chart   = build_candlestick(df_plot, selected_ticker)
+        label = TICKER_LABELS.get(selected_ticker, selected_ticker)
+        st.markdown(f"""
+<div class="hmm-chart-card">
+  <div class="hmm-chart-head">
+    <div class="hmm-chart-title">{label}/USD — Hourly Chart with Regime Overlay</div>
+    <div class="hmm-chart-badges">
+      <span class="hmm-badge hmm-badge-ema20">EMA 20</span>
+      <span class="hmm-badge hmm-badge-ema200">EMA 200</span>
+      <span class="hmm-badge hmm-badge-vol">Volume</span>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
         st.plotly_chart(chart, use_container_width=True, key="main_chart")
 
         # ── Confirmation checklist ─────────────────────────────────────────────
