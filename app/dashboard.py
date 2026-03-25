@@ -58,6 +58,7 @@ if st.session_state.light_mode:
 if not st.session_state.sidebar_visible:
     st.markdown(SIDEBAR_HIDDEN_CSS, unsafe_allow_html=True)
 
+st.markdown('<div id="hmm-topbar-anchor"></div>', unsafe_allow_html=True)
 _topbar_sidebar, _topbar_logo, _topbar_gh, _topbar_btn = st.columns([1, 12, 1, 1])
 with _topbar_sidebar:
     _sidebar_icon = "✕" if st.session_state.sidebar_visible else "☰"
@@ -748,13 +749,7 @@ def _section_label(text: str) -> None:
     )
 
 
-st.markdown("# HMM Quant Trades")
-
-tab_dashboard, tab_backtest, tab_about = st.tabs(
-    ["📊 Live", "📋 Backtest", "📖 About"]
-)
-
-# ── Load all tickers (outside tabs so all_data is accessible to every tab) ───
+# ── Load all tickers before tabs render so the spinner doesn't bleed into tab content ──
 with st.spinner("Loading market data…"):
     all_data = {}
     for ticker in TICKERS:
@@ -762,6 +757,10 @@ with st.spinner("Loading market data…"):
             all_data[ticker] = load_ticker(ticker, period, n_states)
         except Exception as e:
             st.warning(f"Could not load {ticker}: {e}")
+
+tab_dashboard, tab_backtest, tab_about = st.tabs(
+    ["📊 Live", "📋 Backtest", "📖 About"]
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

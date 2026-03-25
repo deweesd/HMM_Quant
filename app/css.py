@@ -145,13 +145,12 @@ section[data-testid="stMain"] {
 /* Remove dividers (they are deleted from code, but guard any that remain) */
 hr { display: none !important; }
 
-/* ── Topbar icon buttons (hamburger, github, theme toggle) ───────── */
-/* Shared style: first col (hamburger) and last col (theme toggle) */
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:first-child
+/* ── Topbar icon buttons (hamburger + theme toggle) ──────────────── */
+/* Scoped via #hmm-topbar-anchor — only matches the topbar row,
+   never leaks into tabs, sidebar, or other st.columns calls. */
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:first-child
   [data-testid="baseButton-secondary"],
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:last-child
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:last-child
   [data-testid="baseButton-secondary"] {
   width: 36px !important;
   height: 36px !important;
@@ -170,28 +169,23 @@ hr { display: none !important; }
   transition: var(--transition) !important;
   box-shadow: none !important;
 }
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:first-child
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:first-child
   [data-testid="baseButton-secondary"]:hover,
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:last-child
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:last-child
   [data-testid="baseButton-secondary"]:hover {
   background: var(--accent-glow) !important;
   border-color: var(--accent) !important;
 }
-/* First column (hamburger): left-aligned */
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:first-child {
+/* Hamburger column: left-aligned */
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:first-child {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
   padding-top: 4px !important;
 }
-/* Last two columns (github + theme toggle): right-aligned */
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:last-child,
-[data-testid="stHorizontalBlock"]:first-of-type
-  [data-testid="stColumn"]:nth-last-child(2) {
+/* GitHub + theme-toggle columns: right-aligned */
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:last-child,
+#hmm-topbar-anchor ~ div [data-testid="stColumn"]:nth-last-child(2) {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
@@ -553,9 +547,10 @@ function toggleHmmTheme() {
 SIDEBAR_HIDDEN_CSS = """
 <style>
 /* ── Sidebar hidden — injected when st.session_state.sidebar_visible is False ── */
-[data-testid="stSidebar"]               { display: none !important; }
-[data-testid="stSidebarCollapsedControl"]{ display: none !important; }
-section[data-testid="stMain"]           { margin-left: 0 !important; }
+[data-testid="stSidebar"]  { display: none !important; }
+section[data-testid="stMain"] { margin-left: 0 !important; }
+/* NOTE: stSidebarCollapsedControl is intentionally NOT hidden so the native
+   Streamlit toggle always works as a fallback. */
 </style>
 """
 
