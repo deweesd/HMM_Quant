@@ -4,6 +4,7 @@ Regime-based crypto trading dashboard powered by Hidden Markov Models.
 
 Detects latent market regimes in hourly BTC, ETH, SOL, and ADA data using a 6-state GaussianHMM, then generates trade signals when 8 of 10 technical confirmation signals align with a Bull regime. Includes a Streamlit dashboard with live regime detection, signal display, and backtesting.
 
+Main app can be found here: https://quant-trader360h.streamlit.app/
 ---
 
 ## Quick Start
