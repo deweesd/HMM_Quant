@@ -33,6 +33,7 @@ from models.hmm        import N_STATES
 from strategy.backtest import run_backtest
 from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER
 from strategy.explain import get_scenario, get_historical_replay
+from app.css import DASHBOARD_CSS
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -45,22 +46,23 @@ st.set_page_config(
     initial_sidebar_state = "expanded",
 )
 
-# ── Minimal custom CSS ────────────────────────────────────────────────────────
+st.markdown(DASHBOARD_CSS, unsafe_allow_html=True)
+
 st.markdown("""
-<style>
-  .signal-long    { background:#0d6b3a; color:#fff; padding:6px 18px;
-                    border-radius:8px; font-size:1.4rem; font-weight:700; }
-  .signal-short   { background:#8b1a1a; color:#fff; padding:6px 18px;
-                    border-radius:8px; font-size:1.4rem; font-weight:700; }
-  .signal-neutral { background:#444;    color:#ccc; padding:6px 18px;
-                    border-radius:8px; font-size:1.4rem; font-weight:700; }
-  .regime-bull    { color:#00c96a; font-weight:700; font-size:1.1rem; }
-  .regime-bear    { color:#e03535; font-weight:700; font-size:1.1rem; }
-  .regime-neutral { color:#aaa;    font-weight:700; font-size:1.1rem; }
-  .card-label     { font-size:0.75rem; color:#aaa; text-transform:uppercase;
-                    letter-spacing:0.08em; }
-  .divider        { border-top: 1px solid #333; margin: 16px 0; }
-</style>
+<div style="display:flex; align-items:center; justify-content:space-between;
+            padding:10px 0 14px; border-bottom:1px solid var(--border);
+            margin-bottom:8px;">
+  <div style="font-size:18px; font-weight:700; letter-spacing:-0.3px; color:var(--t1);">
+    HMM <span style="color:var(--accent-lt);">Quant</span>
+  </div>
+  <button id="hmmThemeBtn"
+    onclick="toggleHmmTheme()"
+    style="width:36px; height:36px; border-radius:50%; border:1px solid var(--border2);
+           background:var(--bg2); color:var(--t2); cursor:pointer; font-size:16px;
+           display:flex; align-items:center; justify-content:center; transition:var(--transition);">
+    🌙
+  </button>
+</div>
 """, unsafe_allow_html=True)
 
 
@@ -102,7 +104,6 @@ with st.sidebar:
         help      = "Number of hourly bars displayed in the candlestick chart.",
     )
 
-    st.divider()
     st.subheader("Exit Strategy")
 
     position_mode = st.radio(
@@ -140,7 +141,6 @@ with st.sidebar:
                 rows.append({"gain_pct": gp, "sell_fraction": sf / 100.0})
             user_exit_ladder = rows
 
-    st.divider()
     st.caption("Data via yfinance · Model via hmmlearn")
     st.caption("For educational purposes only.")
 
@@ -624,8 +624,6 @@ with tab_dashboard:
                 f"🟢 Bull: {bull_count}  ⚪ Neutral: {neut_count}  🔴 Bear: {bear_count}"
             )
 
-    st.divider()
-
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 2 — CURRENT SIGNAL + REGIME SUMMARY
     # ══════════════════════════════════════════════════════════════════════════
@@ -723,8 +721,6 @@ with tab_dashboard:
             except Exception as e:
                 st.warning(f"Scenario unavailable: {e}")
 
-        st.divider()
-
         # ── Confirmation checklist ─────────────────────────────────────────────
         with st.expander("🔍 Confirmation Detail (current bar)", expanded=False):
             chk_cols = st.columns(2)
@@ -732,8 +728,6 @@ with tab_dashboard:
                 val  = bool(latest.get(col_name, False))
                 icon = "✅" if val else "❌"
                 chk_cols[i % 2].write(f"{icon}  {CONFIRM_LABELS[col_name]}")
-
-    st.divider()
 
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 3 — CANDLESTICK CHART
@@ -744,8 +738,6 @@ with tab_dashboard:
         df_plot = all_data[selected_ticker]["df"].tail(chart_bars)
         chart   = build_candlestick(df_plot, selected_ticker)
         st.plotly_chart(chart, use_container_width=True, key="main_chart")
-
-    st.divider()
 
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 4 — BACKTEST METRICS
@@ -851,8 +843,6 @@ with tab_backtest:
         # Equity curve chart
         eq_fig = build_equity_chart(equity_curve, bh_curve, selected_ticker)
         st.plotly_chart(eq_fig, use_container_width=True, key="eq_chart")
-
-        st.divider()
 
         # ── Trade log ──────────────────────────────────────────────────────────
         st.subheader("Trade Log")
@@ -1085,8 +1075,6 @@ in abbreviated form: **T** = trillion, **B** = billion, **M** = million.
 Always perform your own due diligence before making any investment decision.
 """)
 
-    st.divider()
-
     st.subheader("How the Strategy Protects Your Position")
     st.markdown("""
 **5-Tier Profit-Taking Ladder**
@@ -1123,8 +1111,6 @@ When the HMM detects a confirmed Bear regime (3+ consecutive Bear bars), any ope
 remaining position closes immediately, regardless of current gain or loss.
 """)
 
-    st.divider()
-
     st.subheader("Understanding Bull, Bear, and Neutral Regimes")
     st.markdown("""
 The HMM groups all hourly bars into hidden states based on three features: **Returns**
@@ -1146,8 +1132,6 @@ You can be in a Bull regime without a LONG signal if confirmations are weak.
 Regime changes take effect only after the 3-bar minimum duration filter confirms them.
 """)
 
-    st.divider()
-
     st.subheader("Model & Strategy Parameters")
     params = {
         "Initial Capital":     "$20,000",
@@ -1166,5 +1150,4 @@ Regime changes take effect only after the 3-bar minimum duration filter confirms
     params_df = pd.DataFrame(params.items(), columns=["Parameter", "Value"])
     st.dataframe(params_df, use_container_width=True, hide_index=True)
 
-    st.divider()
     st.caption("Built with Streamlit · Plotly · hmmlearn · yfinance · Python 3.12+")
