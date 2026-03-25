@@ -106,8 +106,6 @@ def run_backtest(
     equity_at_entry        = 0.0
     regime_at_entry        = ""
     confirmations_at_entry = 0
-    # Track index into trades list at entry so we can remove partials on trailing stop
-    trade_start_idx        = 0
 
     equity_values = np.empty(n)
     trades        = []
@@ -153,22 +151,19 @@ def run_backtest(
             ))
             in_position = False;  entry_price = 0.0;  peak_price = 0.0
             position_fraction = 1.0;  tiers_fired = set();  equity_at_entry = 0.0
-            entry_bar = -1;  last_exit_bar = i
+            entry_bar = -1;  last_exit_bar = i;  regime_at_entry = ""
             continue
 
         # ── 4. Trailing stop ──────────────────────────────────────────────────
         if in_position and check_trailing_stop(price, peak_price, TRAILING_STOP_PCT):
-            # Remove any partial exit rows for this trade; close full original position
-            del trades[trade_start_idx:]
-            equity  = equity_at_entry
-            pnl     = equity_at_entry * 1.0 * (price / entry_price - 1.0) * leverage
+            pnl     = equity_at_entry * position_fraction * (price / entry_price - 1.0) * leverage
             equity += pnl
             equity_values[i] = equity
 
             trades.append(_make_trade(
                 entry_time=index[entry_bar], exit_time=index[i],
                 entry_price=entry_price, exit_price=price,
-                resolved_fraction=1.0,
+                resolved_fraction=position_fraction,
                 equity_at_entry=equity_at_entry, leverage=leverage,
                 peak_price=peak_price,
                 regime_at_entry=regime_at_entry,
@@ -178,12 +173,12 @@ def run_backtest(
             ))
             in_position = False;  entry_price = 0.0;  peak_price = 0.0
             position_fraction = 1.0;  tiers_fired = set();  equity_at_entry = 0.0
-            entry_bar = -1;  last_exit_bar = i
+            entry_bar = -1;  last_exit_bar = i;  regime_at_entry = ""
             continue
 
         # ── 5. Partial exits ──────────────────────────────────────────────────
         if in_position:
-            gain_pct = round((price / entry_price - 1.0) * 100.0, 6)
+            gain_pct = (price / entry_price - 1.0) * 100.0
             actions  = check_partial_exits(
                 gain_pct, position_fraction, thresholds, tiers_fired
             )
@@ -217,7 +212,6 @@ def run_backtest(
             tiers_fired            = set()
             regime_at_entry        = regime
             confirmations_at_entry = int(confirmations[i])
-            trade_start_idx        = len(trades)
 
     # ── Force-close any open position at end of data ──────────────────────────
     if in_position:

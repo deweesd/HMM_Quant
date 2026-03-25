@@ -123,9 +123,10 @@ def test_bear_exit_equity_update():
 # ── bar loop: trailing stop ───────────────────────────────────────────────────
 
 def test_trailing_stop_fires_before_bear():
-    # Entry at 50000, price rises to 60000 (peak), then drops to 57000 (5% below 60000)
-    # 60000 × 0.95 = 57000 → stop fires before any Bear regime
-    closes  = [50000.0, 55000.0, 60000.0, 57000.0]
+    # Entry at 50000. Price rises to 54000 (+8%, below +15% partial tier), peak.
+    # Then drops to 51300 (5% below peak: 54000 × 0.95 = 51300) → trailing stop fires.
+    # No partial exit should fire (gains stay below +15%).
+    closes  = [50000.0, 52000.0, 54000.0, 51300.0]
     regimes = ["Bull", "Bull", "Bull", "Bull"]
     signals = ["LONG", "NEUTRAL", "NEUTRAL", "NEUTRAL"]
     df = _make_df(closes, regimes, signals)
@@ -139,9 +140,9 @@ def test_trailing_stop_fires_before_bear():
 # ── bar loop: partial exits ───────────────────────────────────────────────────
 
 def test_partial_exit_produces_separate_row():
-    # Entry at 50000, price rises to 57500 (+15%) at bar 2 → partial +15% fires
+    # Entry at 50000, price rises to 58000 (+16%) at bar 2 → partial +15% fires
     # Then Bear exit at bar 3
-    closes  = [50000.0, 50000.0, 57500.0, 57500.0]
+    closes  = [50000.0, 50000.0, 58000.0, 58000.0]
     regimes = ["Bull", "Bull", "Bull", "Bear"]
     signals = ["LONG", "NEUTRAL", "NEUTRAL", "NEUTRAL"]
     df = _make_df(closes, regimes, signals)
@@ -157,7 +158,7 @@ def test_partial_exit_produces_separate_row():
 
 def test_partial_rows_excluded_from_win_rate():
     # Same setup as above: 1 win (bear exit at profit), 1 partial row
-    closes  = [50000.0, 50000.0, 57500.0, 57500.0]
+    closes  = [50000.0, 50000.0, 58000.0, 58000.0]
     regimes = ["Bull", "Bull", "Bull", "Bear"]
     signals = ["LONG", "NEUTRAL", "NEUTRAL", "NEUTRAL"]
     df = _make_df(closes, regimes, signals)
@@ -170,9 +171,9 @@ def test_partial_rows_excluded_from_win_rate():
 
 
 def test_position_fraction_reduces_after_partial():
-    # Entry at 50000, price 57500 (+15%) → partial fires, then price stays flat
+    # Entry at 50000, price 58000 (+16%) → partial +15% fires, then price stays flat
     # Then Bear exit at bar 4 — position_fraction should be 0.90 at Bear exit
-    closes  = [50000.0, 50000.0, 57500.0, 57500.0, 57500.0]
+    closes  = [50000.0, 50000.0, 58000.0, 58000.0, 58000.0]
     regimes = ["Bull", "Bull", "Bull", "Bull", "Bear"]
     signals = ["LONG", "NEUTRAL", "NEUTRAL", "NEUTRAL", "NEUTRAL"]
     df = _make_df(closes, regimes, signals)
