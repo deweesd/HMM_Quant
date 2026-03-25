@@ -601,6 +601,50 @@ def render_ticker_cards(all_data: dict) -> None:
     st.markdown("\n".join(cards_html), unsafe_allow_html=True)
 
 
+def render_sentiment_strip(all_data: dict) -> None:
+    """Render the compact market sentiment strip (replaces Plotly gauge)."""
+    scores = []
+    for t in TICKERS:
+        if t in all_data:
+            r = all_data[t]["df"]["Regime"].iloc[-1]
+            scores.append(1 if r == "Bull" else (-1 if r == "Bear" else 0))
+
+    if not scores:
+        return
+
+    avg        = sum(scores) / len(scores)       # -1 to +1
+    gauge_pct  = (avg + 1) / 2 * 100             # 0 to 100
+
+    if gauge_pct >= 67:
+        label, color = "Bullish",  "var(--bull)"
+    elif gauge_pct <= 33:
+        label, color = "Bearish",  "var(--bear)"
+    else:
+        label, color = "Neutral",  "var(--neut)"
+
+    bull_n = scores.count(1)
+    neut_n = scores.count(0)
+    bear_n = scores.count(-1)
+
+    st.markdown(f"""
+<div class="hmm-sent-strip">
+  <div class="hmm-sent-label">Market Sentiment</div>
+  <div class="hmm-gauge-wrap">
+    <div class="hmm-gauge-track">
+      <div class="hmm-gauge-needle" style="left:{gauge_pct:.0f}%"></div>
+    </div>
+    <div class="hmm-gauge-ticks"><span>Bearish</span><span>Neutral</span><span>Bullish</span></div>
+  </div>
+  <div class="hmm-sent-val" style="color:{color}">{label}</div>
+  <div class="hmm-sent-pills">
+    <div class="hmm-sent-pill bull">● Bull ×{bull_n}</div>
+    <div class="hmm-sent-pill neut">● Neutral ×{neut_n}</div>
+    <div class="hmm-sent-pill bear">● Bear ×{bear_n}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
@@ -632,84 +676,7 @@ with tab_dashboard:
     st.markdown('<div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;">Market Overview</div>', unsafe_allow_html=True)
     render_ticker_cards(all_data)
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # OVERALL MARKET SENTIMENT GAUGE
-    # Scores each asset: Bull = +1, Neutral = 0, Bear = -1
-    # Averages across all 4 tickers → maps to 0–100 for the gauge needle.
-    # Green zone (67–100) = broadly bullish market
-    # Grey  zone (33–67)  = mixed / neutral
-    # Red   zone (0–33)   = broadly bearish market
-    # ══════════════════════════════════════════════════════════════════════════
-    regime_scores = []
-    for t in TICKERS:
-        if t in all_data:
-            reg = all_data[t]["df"]["Regime"].iloc[-1]
-            if reg == "Bull":
-                regime_scores.append(1)
-            elif reg == "Bear":
-                regime_scores.append(-1)
-            else:
-                regime_scores.append(0)
-
-    if regime_scores:
-        avg_score   = sum(regime_scores) / len(regime_scores)   # -1 to +1
-        gauge_value = (avg_score + 1) / 2 * 100                 # 0 to 100
-
-        if gauge_value >= 67:
-            sentiment_label = "Bullish"
-            needle_color    = "#00c96a"
-        elif gauge_value <= 33:
-            sentiment_label = "Bearish"
-            needle_color    = "#e03535"
-        else:
-            sentiment_label = "Neutral"
-            needle_color    = "#888888"
-
-        gauge_fig = go.Figure(go.Indicator(
-            mode  = "gauge+number+delta",
-            value = gauge_value,
-            title = {"text": f"Overall Market Sentiment — <b>{sentiment_label}</b>",
-                     "font": {"size": 15}},
-            delta = {"reference": 50, "increasing": {"color": "#00c96a"},
-                     "decreasing": {"color": "#e03535"}},
-            number= {"suffix": "", "font": {"size": 28}, "valueformat": ".0f"},
-            gauge = {
-                "axis": {"range": [0, 100], "tickwidth": 1,
-                         "tickcolor": "#555", "tickvals": [0, 33, 50, 67, 100],
-                         "ticktext": ["Bear", "", "Neutral", "", "Bull"]},
-                "bar":  {"color": needle_color, "thickness": 0.25},
-                "bgcolor": "rgba(0,0,0,0)",
-                "borderwidth": 0,
-                "steps": [
-                    {"range": [0,  33], "color": "rgba(224,53,53,0.18)"},
-                    {"range": [33, 67], "color": "rgba(100,100,100,0.12)"},
-                    {"range": [67,100], "color": "rgba(0,201,106,0.18)"},
-                ],
-                "threshold": {
-                    "line":  {"color": "#ffffff", "width": 2},
-                    "thickness": 0.75,
-                    "value": 50,
-                },
-            },
-        ))
-        gauge_fig.update_layout(
-            height        = 220,
-            margin        = dict(l=30, r=30, t=40, b=10),
-            paper_bgcolor = "rgba(0,0,0,0)",
-            font          = {"color": "#e0e0e0"},
-        )
-
-        bull_count = regime_scores.count(1)
-        bear_count = regime_scores.count(-1)
-        neut_count = regime_scores.count(0)
-
-        g_left, g_mid, g_right = st.columns([1, 2, 1])
-        with g_mid:
-            st.plotly_chart(gauge_fig, use_container_width=True, key="market_gauge")
-            st.caption(
-                f"Based on HMM regime across all 4 assets  ·  "
-                f"🟢 Bull: {bull_count}  ⚪ Neutral: {neut_count}  🔴 Bear: {bear_count}"
-            )
+    render_sentiment_strip(all_data)
 
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 2 — HERO SIGNAL BANNER

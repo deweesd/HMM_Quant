@@ -263,6 +263,36 @@ hr { display: none !important; }
 .hmm-regime-pill.bull { background:var(--bull-bg); color:var(--bull); }
 .hmm-regime-pill.bear { background:var(--bear-bg); color:var(--bear); }
 .hmm-regime-pill.neut { background:var(--neut-bg); color:var(--neut); }
+
+/* ── Sentiment Strip ─────────────────────────────────────────────── */
+.hmm-sent-strip {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px 20px;
+  display:flex; align-items:center; gap:18px;
+  box-shadow:var(--shadow);
+}
+.hmm-sent-label { font-size:12px; font-weight:600; color:var(--t3);
+                  text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+.hmm-gauge-wrap { flex:1; display:flex; flex-direction:column; gap:5px; }
+.hmm-gauge-track {
+  height:7px; border-radius:4px;
+  background: linear-gradient(90deg, var(--bear) 0%, var(--neut) 50%, var(--bull) 100%);
+  opacity:0.35; position:relative;
+}
+.hmm-gauge-needle {
+  position:absolute; top:-4px; transform:translateX(-50%);
+  width:3px; height:15px; border-radius:2px;
+  background:var(--t1); opacity:0.9;
+}
+.hmm-gauge-ticks { display:flex; justify-content:space-between;
+                   font-size:10.5px; color:var(--t3); }
+.hmm-sent-val { font-size:18px; font-weight:700; white-space:nowrap; }
+.hmm-sent-pills { display:flex; gap:7px; flex-shrink:0; flex-wrap:wrap; }
+.hmm-sent-pill { display:flex; align-items:center; gap:4px;
+                 padding:4px 10px; border-radius:12px; font-size:11.5px; font-weight:600; }
+.hmm-sent-pill.bull { background:var(--bull-bg); color:var(--bull); }
+.hmm-sent-pill.neut { background:var(--neut-bg); color:var(--neut); }
+.hmm-sent-pill.bear { background:var(--bear-bg); color:var(--bear); }
 </style>
 
 <script>
