@@ -320,6 +320,39 @@ hr { display: none !important; }
 }
 .hmm-conf-icon.pass { background:var(--bull-bg); color:var(--bull); }
 .hmm-conf-icon.fail { background:var(--bear-bg); color:var(--bear); }
+
+/* ── Backtest Metrics Grid ───────────────────────────────────────── */
+.hmm-metrics-card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+}
+.hmm-metrics-head {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.hmm-metrics-title { font-size:13.5px; font-weight:600; color:var(--t1); }
+.hmm-metrics-sub   { font-size:11.5px; color:var(--t3); }
+.hmm-metrics-grid  {
+  display:grid; grid-template-columns:repeat(6,1fr);
+  gap:1px; background:var(--border);
+}
+.hmm-metric-cell {
+  background:var(--bg2); padding:12px 14px;
+  display:flex; flex-direction:column; gap:4px;
+  transition:var(--transition);
+}
+.hmm-metric-cell:hover { background:var(--bg3); }
+.hmm-metric-lbl {
+  font-size:10px; font-weight:600; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--t3);
+}
+.hmm-metric-val { font-size:21px; font-weight:700; line-height:1; color:var(--t1); }
+.hmm-metric-val.pos { color:var(--bull); }
+.hmm-metric-val.neg { color:var(--bear); }
+.hmm-metric-val.acc { color:var(--accent-lt); }
+.hmm-metric-ctx { font-size:11px; color:var(--t3); }
+.hmm-metric-ctx.pos { color:var(--bull); }
+.hmm-metric-ctx.neg { color:var(--bear); }
 </style>
 
 <script>

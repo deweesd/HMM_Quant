@@ -680,6 +680,55 @@ def render_conf_panel(latest) -> None:
 """, unsafe_allow_html=True)
 
 
+def render_metrics_snapshot(m: dict, ticker: str) -> None:
+    """Render the 6-cell backtest metrics grid card."""
+    label      = TICKER_LABELS.get(ticker, ticker)
+    ret_cls    = "pos" if m["Total Return (%)"] >= 0 else "neg"
+    alpha_cls  = "pos" if m["Alpha (pp)"] >= 0 else "neg"
+    dd_cls     = "neg"
+
+    st.markdown(f"""
+<div class="hmm-metrics-card">
+  <div class="hmm-metrics-head">
+    <div class="hmm-metrics-title">Backtest Snapshot — {label}/USD</div>
+    <div class="hmm-metrics-sub">$20,000 start · 1.5× leverage · 72-hr cooldown</div>
+  </div>
+  <div class="hmm-metrics-grid">
+    <div class="hmm-metric-cell">
+      <div class="hmm-metric-lbl">Total Return</div>
+      <div class="hmm-metric-val {ret_cls}">{m["Total Return (%)"]:+.1f}%</div>
+      <div class="hmm-metric-ctx {alpha_cls}">α {m["Alpha (pp)"]:+.1f}pp vs B&H</div>
+    </div>
+    <div class="hmm-metric-cell">
+      <div class="hmm-metric-lbl">Buy &amp; Hold</div>
+      <div class="hmm-metric-val">{m["Buy & Hold (%)"]:+.1f}%</div>
+      <div class="hmm-metric-ctx">Benchmark</div>
+    </div>
+    <div class="hmm-metric-cell">
+      <div class="hmm-metric-lbl">Win Rate</div>
+      <div class="hmm-metric-val acc">{m["Win Rate (%)"]:.0f}%</div>
+      <div class="hmm-metric-ctx">of trades</div>
+    </div>
+    <div class="hmm-metric-cell">
+      <div class="hmm-metric-lbl">Max Drawdown</div>
+      <div class="hmm-metric-val {dd_cls}">{m["Max Drawdown (%)"]:.1f}%</div>
+      <div class="hmm-metric-ctx {dd_cls}">Peak-to-trough</div>
+    </div>
+    <div class="hmm-metric-cell">
+      <div class="hmm-metric-lbl">Sharpe Ratio</div>
+      <div class="hmm-metric-val acc">{m["Sharpe Ratio"]:.2f}</div>
+      <div class="hmm-metric-ctx">Risk-adjusted</div>
+    </div>
+    <div class="hmm-metric-cell">
+      <div class="hmm-metric-lbl">Final Equity</div>
+      <div class="hmm-metric-val pos">${m["Final Equity ($)"]:,.0f}</div>
+      <div class="hmm-metric-ctx">{m["Total Trades"]} trades</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
@@ -777,9 +826,7 @@ with tab_dashboard:
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 4 — BACKTEST METRICS
     # ══════════════════════════════════════════════════════════════════════════
-    st.subheader(f"Backtest Metrics — {TICKER_LABELS[selected_ticker]}/USD")
-    st.caption("$20,000 starting capital · 1.5× leverage · 72-hr cooldown after exit")
-
+    st.markdown('<div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;">Backtest Snapshot</div>', unsafe_allow_html=True)
     try:
         if position_mode == "user_defined" and user_exit_ladder:
             try:
@@ -799,24 +846,7 @@ with tab_dashboard:
             equity_curve, bh_curve, trades_df, metrics = load_backtest(
                 selected_ticker, period, n_states
             )
-
-        m = metrics
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric(
-            "Total Return",
-            f"{m['Total Return (%)']:+.1f}%",
-            delta = f"α {m['Alpha (pp)']:+.1f}pp vs B&H",
-            delta_color = "normal",
-        )
-        c2.metric("Win Rate",     f"{m['Win Rate (%)']:.0f}%")
-        c3.metric("Max Drawdown", f"{m['Max Drawdown (%)']:.1f}%")
-        c4.metric("Sharpe Ratio", f"{m['Sharpe Ratio']:.2f}")
-
-        sub1, sub2, sub3 = st.columns(3)
-        sub1.metric("Buy & Hold",    f"{m['Buy & Hold (%)']:+.1f}%")
-        sub2.metric("Total Trades",  m["Total Trades"])
-        sub3.metric("Final Equity",  f"${m['Final Equity ($)']:,.0f}")
-
+        render_metrics_snapshot(metrics, selected_ticker)
     except Exception as e:
         st.error(f"Backtest error: {e}")
 
