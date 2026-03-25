@@ -13,7 +13,6 @@ Public API
 """
 
 TRAILING_STOP_PCT = 0.05   # exit if price drops 5% below peak since entry
-MIN_REGIME_BARS   = 3      # defined in models/hmm.py; referenced here for clarity
 
 RECOMMENDED_LADDER = [
     {"gain_pct": 15,  "sell_fraction": 0.10},
