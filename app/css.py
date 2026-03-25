@@ -223,6 +223,46 @@ hr { display: none !important; }
 .hmm-stat-val.pos { color:var(--bull); }
 .hmm-stat-val.neg { color:var(--bear); }
 .hmm-stat-val.acc { color:var(--accent-lt); }
+
+/* ── Ticker Cards ────────────────────────────────────────────────── */
+.hmm-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:4px 0; }
+.hmm-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 14px 12px;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  cursor: default;
+}
+.hmm-card:hover { border-color:var(--border2); transform:translateY(-1px); }
+/* Left accent bar via pseudo-element */
+.hmm-card::before {
+  content:''; position:absolute;
+  top:0; left:0; width:4px; height:100%;
+  border-radius:var(--radius) 0 0 var(--radius);
+}
+.hmm-card.bull::before { background:var(--bull); }
+.hmm-card.bear::before { background:var(--bear); }
+.hmm-card.neut::before { background:var(--neut); }
+.hmm-card.bull { background: linear-gradient(135deg, var(--bull-bg) 0%, var(--bg2) 45%); }
+.hmm-card.bear { background: linear-gradient(135deg, var(--bear-bg) 0%, var(--bg2) 45%); }
+.hmm-card-name  { font-size:14px; font-weight:700; color:var(--t1); }
+.hmm-card-tick  { font-size:11px; color:var(--t3); margin-top:1px; }
+.hmm-card-price { font-size:19px; font-weight:700; color:var(--t1); margin:8px 0 2px; }
+.hmm-card-delta { font-size:12px; font-weight:600; }
+.hmm-card-delta.pos { color:var(--bull); }
+.hmm-card-delta.neg { color:var(--bear); }
+.hmm-card-stats { display:flex; gap:14px; margin-top:8px; }
+.hmm-card-stat-label { font-size:10px; color:var(--t3); text-transform:uppercase; letter-spacing:.06em; }
+.hmm-card-stat-val   { font-size:12px; font-weight:600; color:var(--t2); }
+.hmm-regime-pill {
+  font-size:11px; font-weight:600; padding:3px 8px; border-radius:10px;
+}
+.hmm-regime-pill.bull { background:var(--bull-bg); color:var(--bull); }
+.hmm-regime-pill.bear { background:var(--bear-bg); color:var(--bear); }
+.hmm-regime-pill.neut { background:var(--neut-bg); color:var(--neut); }
 </style>
 
 <script>

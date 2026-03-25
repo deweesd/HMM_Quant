@@ -539,6 +539,69 @@ def render_hero_banner(df: pd.DataFrame, ticker: str, latest) -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# HELPER: Regime-Coloured Ticker Cards
+# ══════════════════════════════════════════════════════════════════════════════
+
+def render_ticker_cards(all_data: dict) -> None:
+    """Render 4 regime-coloured ticker cards as HTML."""
+    cards_html = ['<div class="hmm-cards">']
+
+    for ticker in TICKERS:
+        if ticker not in all_data:
+            cards_html.append(
+                f'<div class="hmm-card neut"><div class="hmm-card-name">'
+                f'{TICKER_LABELS[ticker]}</div><div style="color:var(--t3)">No data</div></div>'
+            )
+            continue
+
+        df_t  = all_data[ticker]["df"]
+        label = TICKER_LABELS[ticker]
+        price = float(df_t["Close"].iloc[-1])
+
+        def _pct(n):
+            if len(df_t) > n:
+                old = float(df_t["Close"].iloc[-(n + 1)])
+                return (price / old - 1) * 100 if old else 0.0
+            return 0.0
+
+        pct_24h = _pct(24)
+        pct_7d  = _pct(168)
+        mcap    = fetch_circ_supply(ticker)
+        regime  = str(df_t["Regime"].iloc[-1])
+        reg_cls = {"Bull": "bull", "Bear": "bear"}.get(regime, "neut")
+        reg_icon= {"Bull": "●", "Bear": "●"}.get(regime, "●")
+        d_cls   = "pos" if pct_24h >= 0 else "neg"
+        d_sign  = "▲" if pct_24h >= 0 else "▼"
+        w_color = "var(--bull)" if pct_7d >= 0 else "var(--bear)"
+
+        cards_html.append(f"""
+<div class="hmm-card {reg_cls}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div class="hmm-card-name">{label}</div>
+      <div class="hmm-card-tick">{ticker}/USD</div>
+    </div>
+    <div class="hmm-regime-pill {reg_cls}">{reg_icon} {regime}</div>
+  </div>
+  <div class="hmm-card-price">${price:,.2f}</div>
+  <div class="hmm-card-delta {d_cls}">{d_sign} {abs(pct_24h):.2f}% (24h)</div>
+  <div class="hmm-card-stats">
+    <div class="hmm-card-stat">
+      <div class="hmm-card-stat-label">7d</div>
+      <div class="hmm-card-stat-val" style="color:{w_color}">{pct_7d:+.1f}%</div>
+    </div>
+    <div class="hmm-card-stat">
+      <div class="hmm-card-stat-label">Mkt Cap</div>
+      <div class="hmm-card-stat-val">{mcap}</div>
+    </div>
+  </div>
+</div>""")
+
+    cards_html.append('</div>')
+    st.markdown("\n".join(cards_html), unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -566,44 +629,8 @@ with tab_dashboard:
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 1 — TICKER OVERVIEW CARDS
     # ══════════════════════════════════════════════════════════════════════════
-    st.subheader("Market Overview")
-    cols = st.columns(4)
-
-    for col, ticker in zip(cols, TICKERS):
-        if ticker not in all_data:
-            col.warning(f"{TICKER_LABELS[ticker]}: no data")
-            continue
-
-        df_t   = all_data[ticker]["df"]
-        label  = TICKER_LABELS[ticker]
-        price  = float(df_t["Close"].iloc[-1])
-
-        # Price changes (guard against index being too short)
-        def safe_pct(bars_back: int) -> float:
-            if len(df_t) > bars_back:
-                old = float(df_t["Close"].iloc[-(bars_back + 1)])
-                return (price / old - 1) * 100 if old != 0 else 0.0
-            return 0.0
-
-        pct_24h = safe_pct(24)
-        pct_7d  = safe_pct(168)
-        mcap    = fetch_circ_supply(ticker)
-
-        # 7-day sparkline (last 168 hourly bars)
-        spark_prices = df_t["Close"].iloc[-168:]
-        spark_fig    = make_sparkline(spark_prices, positive=(pct_7d >= 0))
-
-        with col:
-            st.markdown(f"### {label}/USD")
-            st.metric(
-                label = "Price",
-                value = f"${price:,.2f}",
-                delta = f"{pct_24h:+.2f}% (24h)",
-                delta_color = "normal",
-            )
-            st.metric("7d Change",  f"{pct_7d:+.2f}%")
-            st.metric("Market Cap", mcap)
-            st.plotly_chart(spark_fig, use_container_width=True, key=f"spark_{ticker}")
+    st.markdown('<div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;">Market Overview</div>', unsafe_allow_html=True)
+    render_ticker_cards(all_data)
 
     # ══════════════════════════════════════════════════════════════════════════
     # OVERALL MARKET SENTIMENT GAUGE
