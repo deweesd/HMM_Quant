@@ -645,6 +645,41 @@ def render_sentiment_strip(all_data: dict) -> None:
 """, unsafe_allow_html=True)
 
 
+def render_conf_panel(latest) -> None:
+    """Render confirmation checklist as an open-by-default collapsible panel."""
+    n_conf = int(latest["Confirmations"])
+    rows = []
+    for col_name in CONFIRM_COLS:
+        val     = bool(latest.get(col_name, False))
+        cls     = "pass" if val else "fail"
+        icon    = "✓" if val else "✗"
+        desc    = CONFIRM_LABELS[col_name]
+        rows.append(
+            f'<div class="hmm-conf-item">'
+            f'<div class="hmm-conf-icon {cls}">{icon}</div>{desc}</div>'
+        )
+
+    items_html = "\n".join(rows)
+    panel_id   = "hmmConfBody"
+
+    st.markdown(f"""
+<div class="hmm-conf-card">
+  <div class="hmm-conf-header" onclick="
+    var b=document.getElementById('{panel_id}');
+    b.classList.toggle('collapsed');
+    this.querySelector('.hmm-conf-count').textContent =
+      b.classList.contains('collapsed') ? '{n_conf}/10 met ▾' : '{n_conf}/10 met ▴';
+  ">
+    <div class="hmm-conf-title">🔍 Confirmation Detail — Current Bar</div>
+    <div class="hmm-conf-count">{n_conf}/10 met ▴</div>
+  </div>
+  <div class="hmm-conf-body" id="{panel_id}">
+    {items_html}
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
@@ -726,14 +761,6 @@ with tab_dashboard:
             except Exception as e:
                 st.warning(f"Scenario unavailable: {e}")
 
-        # ── Confirmation checklist ─────────────────────────────────────────────
-        with st.expander("🔍 Confirmation Detail (current bar)", expanded=False):
-            chk_cols = st.columns(2)
-            for i, col_name in enumerate(CONFIRM_COLS):
-                val  = bool(latest.get(col_name, False))
-                icon = "✅" if val else "❌"
-                chk_cols[i % 2].write(f"{icon}  {CONFIRM_LABELS[col_name]}")
-
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 3 — CANDLESTICK CHART
     # ══════════════════════════════════════════════════════════════════════════
@@ -743,6 +770,9 @@ with tab_dashboard:
         df_plot = all_data[selected_ticker]["df"].tail(chart_bars)
         chart   = build_candlestick(df_plot, selected_ticker)
         st.plotly_chart(chart, use_container_width=True, key="main_chart")
+
+        # ── Confirmation checklist ─────────────────────────────────────────────
+        render_conf_panel(latest)
 
     # ══════════════════════════════════════════════════════════════════════════
     # ROW 4 — BACKTEST METRICS

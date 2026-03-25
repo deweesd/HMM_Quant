@@ -293,6 +293,33 @@ hr { display: none !important; }
 .hmm-sent-pill.bull { background:var(--bull-bg); color:var(--bull); }
 .hmm-sent-pill.neut { background:var(--neut-bg); color:var(--neut); }
 .hmm-sent-pill.bear { background:var(--bear-bg); color:var(--bear); }
+
+/* ── Confirmation Panel ──────────────────────────────────────────── */
+.hmm-conf-card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+}
+.hmm-conf-header {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  cursor:pointer; user-select:none;
+}
+.hmm-conf-header:hover { background:var(--bg3); }
+.hmm-conf-title { font-size:13px; font-weight:600; color:var(--t2); }
+.hmm-conf-count { font-size:12px; color:var(--t3); }
+.hmm-conf-body {
+  padding:12px 16px;
+  display:grid; grid-template-columns:1fr 1fr; gap:7px 20px;
+}
+.hmm-conf-body.collapsed { display:none; }
+.hmm-conf-item { display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--t2); }
+.hmm-conf-icon {
+  width:18px; height:18px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; flex-shrink:0; font-weight:700;
+}
+.hmm-conf-icon.pass { background:var(--bull-bg); color:var(--bull); }
+.hmm-conf-icon.fail { background:var(--bear-bg); color:var(--bear); }
 </style>
 
 <script>
