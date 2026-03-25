@@ -454,3 +454,28 @@ function toggleHmmTheme() {
 }
 </script>
 """
+
+LIGHT_MODE_CSS = """
+<style>
+/* ── Light mode override — injected when st.session_state.light_mode is True ── */
+body {
+  --bg0:         #f0f0f8;
+  --bg1:         #e8e8f4;
+  --bg2:         #ffffff;
+  --bg3:         #f4f4fc;
+  --border:      rgba(79,70,229,0.10);
+  --border2:     rgba(79,70,229,0.20);
+  --t1:          #111128;
+  --t2:          #4a4a68;
+  --t3:          #9090aa;
+  --accent:      #4f46e5;
+  --accent-lt:   #6366f1;
+  --accent-glow: rgba(79,70,229,0.14);
+  --bull:        #059669;
+  --bull-bg:     rgba(5,150,105,0.08);
+  --bear:        #dc2626;
+  --bear-bg:     rgba(220,38,38,0.08);
+  --shadow:      0 2px 8px rgba(79,70,229,0.08), 0 0 1px rgba(79,70,229,0.12);
+}
+</style>
+"""
