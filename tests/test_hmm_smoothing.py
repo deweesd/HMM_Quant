@@ -54,3 +54,11 @@ def test_single_bar_sequence():
 
 def test_min_regime_bars_constant_is_3():
     assert MIN_REGIME_BARS == 3
+
+
+def test_short_run_of_confirmed_label_kept():
+    # Bull*3 confirmed, Bear*3 confirmed, Bull*2 — the trailing Bull*2 is below
+    # min_bars=3, but Bull was previously confirmed, so it is KEPT (not reverted to Bear)
+    raw = np.array(["Bull", "Bull", "Bull", "Bear", "Bear", "Bear", "Bull", "Bull"])
+    result = _smooth_regimes(raw, 3)
+    assert list(result) == ["Bull", "Bull", "Bull", "Bear", "Bear", "Bear", "Bull", "Bull"]

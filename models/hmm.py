@@ -29,14 +29,18 @@ def _smooth_regimes(raw: np.ndarray, min_bars: int) -> np.ndarray:
     """
     Apply minimum-duration filter to a regime label array.
 
-    Operates on the original predicted sequence (no cascade): short runs (< min_bars)
-    are reverted to the previous confirmed regime, but only when the short run's label
-    has never been confirmed before.  Bar 0 is always retained (its label is added to
-    the confirmed set immediately).
+    A regime run is kept if:
+      - Its length >= min_bars, OR
+      - Its label was previously confirmed (even if length < min_bars)
 
-    After the loop, i always lands on the first bar of a new (different) regime;
-    the else branch (same label) is dead code for all bars after bar 0 and must
-    not be given additional logic.
+    Otherwise, the short run is reverted to the previous confirmed regime.
+
+    Bar 0 is always retained and its label is added to the confirmed set immediately.
+    This ensures bar 0 is never reverted.
+
+    Implementation note: The loop uses i=j jumps at run boundaries, so raw[i] != prev_label
+    is always true when the loop body executes after bar 0. The else branch is dead code
+    after bar 0 and must not be given additional logic.
     """
     if len(raw) == 0:
         return raw.copy()
@@ -61,7 +65,8 @@ def _smooth_regimes(raw: np.ndarray, min_bars: int) -> np.ndarray:
                 confirmed.add(raw[i])
             i = j
         else:
-            # Dead code after bar 0: i always lands on a new-regime bar after any run
+            # Dead code after bar 0: the i=j jump at run boundaries ensures raw[i] != prev_label
+            # is always true when the loop body runs after bar 0, so this branch never executes
             prev_label = raw[i]
             i += 1
 
