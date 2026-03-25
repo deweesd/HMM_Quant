@@ -31,6 +31,8 @@ from strategy.signals  import get_ticker_data, CONFIRM_COLS, CONFIRM_LABELS
 from pipeline.download import TICKERS, TICKER_LABELS
 from models.hmm        import N_STATES
 from strategy.backtest import run_backtest
+from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER
+from strategy.explain import get_scenario, get_historical_replay
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -101,6 +103,44 @@ with st.sidebar:
     )
 
     st.divider()
+    st.subheader("Exit Strategy")
+
+    position_mode = st.radio(
+        "Position Mode",
+        options=["recommended", "user_defined"],
+        format_func=lambda x: "Recommended" if x == "recommended" else "User Defined",
+        help="Recommended uses the built-in 5-tier profit-taking ladder.",
+    )
+
+    position_usd = st.number_input(
+        "Position Size (USD)",
+        min_value=100,
+        value=1000,
+        step=100,
+        help="Hypothetical capital to allocate to one trade.",
+    )
+
+    user_exit_ladder = None
+    if position_mode == "user_defined":
+        with st.expander("Custom Exit Ladder", expanded=True):
+            st.caption("Define 5 tiers. Last tier is always 'remainder' (50% of remaining).")
+            default_gains = [15, 30, 45, 60, 100]
+            default_fracs = [10, 15, 20, 30, 50]
+            rows = []
+            for k in range(5):
+                c1, c2 = st.columns(2)
+                gp = c1.number_input(
+                    f"Tier {k+1} Gain %", min_value=1, max_value=1000,
+                    value=default_gains[k], key=f"gp_{k}",
+                )
+                sf = c2.number_input(
+                    f"Sell %", min_value=1, max_value=99,
+                    value=default_fracs[k], key=f"sf_{k}",
+                )
+                rows.append({"gain_pct": gp, "sell_fraction": sf / 100.0})
+            user_exit_ladder = rows
+
+    st.divider()
     st.caption("Data via yfinance · Model via hmmlearn")
     st.caption("For educational purposes only.")
 
@@ -116,10 +156,28 @@ def load_ticker(ticker: str, period: str, n_states: int) -> dict:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_backtest(ticker: str, period: str, n_states: int) -> tuple:
-    """Run backtest for one ticker (cached 1 hour)."""
+def load_backtest(ticker: str, period: str, n_states: int,
+                  position_mode: str = "recommended") -> tuple:
+    """Run backtest for one ticker (cached 1 hour, recommended mode only)."""
     result = load_ticker(ticker, period, n_states)
-    return run_backtest(result["df"])
+    return run_backtest(result["df"], position_mode=position_mode)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_scenario(ticker: str, period: str, n_states: int,
+                  position_usd: float) -> dict:
+    """Compute scenario for current signal bar (cached 1 hour)."""
+    result = load_ticker(ticker, period, n_states)
+    return get_scenario(
+        result["df"], ticker, position_usd, RECOMMENDED_LADDER
+    )
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def load_replay(ticker: str, period: str, n_states: int) -> list:
+    """Compute historical replay (cached 1 hour)."""
+    result = load_ticker(ticker, period, n_states)
+    return get_historical_replay(result["df"], n=5)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -630,6 +688,41 @@ with tab_dashboard:
                 hide_index          = True,
             )
 
+        # ── Scenario Calculator (only shown when signal is LONG) ───────────────
+        if signal == "LONG":
+            try:
+                if position_mode == "user_defined" and user_exit_ladder:
+                    try:
+                        validated_ladder = build_exit_thresholds("user_defined", user_exit_ladder)
+                        scenario = get_scenario(
+                            df_sel, selected_ticker, position_usd, validated_ladder
+                        )
+                    except ValueError as e:
+                        st.warning(f"Invalid custom ladder: {e} — showing recommended.")
+                        scenario = load_scenario(selected_ticker, period, n_states, position_usd)
+                else:
+                    scenario = load_scenario(selected_ticker, period, n_states, position_usd)
+
+                st.markdown("#### Scenario Calculator")
+                sc1, sc2, sc3, sc4 = st.columns(4)
+                sc1.metric("Entry Price",    f"${scenario['entry_price']:,.2f}")
+                sc2.metric("HMM Confidence", f"{scenario['hmm_confidence']:.0%}")
+                sc3.metric("Regime Bars",    f"{scenario['regime_bars']}h confirmed")
+                sc4.metric("Trailing Stop",  f"${scenario['trailing_stop_price']:,.2f}",
+                           delta=f"${scenario['trailing_stop_loss']:,.0f} max loss",
+                           delta_color="inverse")
+
+                # Exit schedule table
+                sched_df = pd.DataFrame(scenario["exit_schedule"])
+                sched_df.columns = ["Tier", "Trigger Price ($)", "USD Realised", "USD Remaining"]
+                st.dataframe(sched_df, use_container_width=True, hide_index=True)
+                st.caption(
+                    f"Risk/Reward: {scenario['risk_reward_ratio']:.1f}×  ·  "
+                    f"Avg trade duration: {scenario['avg_trade_duration_h']:.0f}h"
+                )
+            except Exception as e:
+                st.warning(f"Scenario unavailable: {e}")
+
         st.divider()
 
         # ── Confirmation checklist ─────────────────────────────────────────────
@@ -661,9 +754,24 @@ with tab_dashboard:
     st.caption("$20,000 starting capital · 1.5× leverage · 72-hr cooldown after exit")
 
     try:
-        equity_curve, bh_curve, trades_df, metrics = load_backtest(
-            selected_ticker, period, n_states
-        )
+        if position_mode == "user_defined" and user_exit_ladder:
+            try:
+                validated_ladder = build_exit_thresholds("user_defined", user_exit_ladder)
+                result_data = load_ticker(selected_ticker, period, n_states)
+                equity_curve, bh_curve, trades_df, metrics = run_backtest(
+                    result_data["df"],
+                    position_mode="user_defined",
+                    user_exit_ladder=validated_ladder,
+                )
+            except ValueError as e:
+                st.warning(f"Invalid custom ladder: {e} — using recommended.")
+                equity_curve, bh_curve, trades_df, metrics = load_backtest(
+                    selected_ticker, period, n_states
+                )
+        else:
+            equity_curve, bh_curve, trades_df, metrics = load_backtest(
+                selected_ticker, period, n_states
+            )
 
         m = metrics
         c1, c2, c3, c4 = st.columns(4)
@@ -693,9 +801,52 @@ with tab_backtest:
     st.subheader(f"Backtest — {TICKER_LABELS[selected_ticker]}/USD")
 
     try:
-        equity_curve, bh_curve, trades_df, metrics = load_backtest(
-            selected_ticker, period, n_states
-        )
+        if position_mode == "user_defined" and user_exit_ladder:
+            try:
+                validated_ladder = build_exit_thresholds("user_defined", user_exit_ladder)
+                result_data = load_ticker(selected_ticker, period, n_states)
+                equity_curve, bh_curve, trades_df, metrics = run_backtest(
+                    result_data["df"],
+                    position_mode="user_defined",
+                    user_exit_ladder=validated_ladder,
+                )
+            except ValueError as e:
+                st.warning(f"Invalid custom ladder: {e} — using recommended.")
+                equity_curve, bh_curve, trades_df, metrics = load_backtest(
+                    selected_ticker, period, n_states
+                )
+        else:
+            equity_curve, bh_curve, trades_df, metrics = load_backtest(
+                selected_ticker, period, n_states
+            )
+
+        # ── Historical Signal Replay ───────────────────────────────────────────
+        try:
+            replay = load_replay(selected_ticker, period, n_states)
+            if replay:
+                st.subheader("Last 5 Completed LONG Trades")
+                for trade in replay:
+                    ret_color   = "#00c96a" if trade["total_return_pct"] >= 0 else "#e03535"
+                    pnl_sign    = "+" if trade["pnl_usd"] >= 0 else ""
+                    partials_str = "  ".join(
+                        f"`{p}`" for p in trade["partials_fired"]
+                    ) if trade["partials_fired"] else "*no partial exits*"
+                    st.markdown(
+                        f"**Trade {trade['trade_num']}** &nbsp; "
+                        f"{trade['entry_time'][:10]} → {trade['exit_time'][:10]} "
+                        f"({trade['duration_h']}h)&nbsp; | &nbsp;"
+                        f"<span style='color:{ret_color}'>"
+                        f"**{trade['total_return_pct']:+.1f}%** / "
+                        f"{pnl_sign}${trade['pnl_usd']:,.0f}</span> &nbsp; | &nbsp;"
+                        f"Exit: *{trade['exit_reason']}* &nbsp; | &nbsp;"
+                        f"Regime: {trade['regime_at_entry']} · "
+                        f"{trade['confirmations_entry']}/10 conf &nbsp;",
+                        unsafe_allow_html=True,
+                    )
+                    st.caption(f"Partials fired: {partials_str}  ·  Peak gain: {trade['peak_gain_pct']:+.1f}%")
+                    st.markdown("---")
+        except Exception as e:
+            st.warning(f"Replay unavailable: {e}")
 
         # Equity curve chart
         eq_fig = build_equity_chart(equity_curve, bh_curve, selected_ticker)
@@ -718,12 +869,15 @@ with tab_backtest:
                     return ""
 
             st.dataframe(
-                trades_df.style.applymap(color_ret, subset=["Return %"]),
+                trades_df.style.map(color_ret, subset=["Return %"]),
                 use_container_width = True,
                 hide_index          = False,
             )
-            st.caption(f"{len(trades_df)} completed trades "
-                       f"· Avg return {metrics['Avg Trade Return (%)']:+.2f}% per trade")
+            n_full = len(trades_df[trades_df["Is Partial"] == False]) if "Is Partial" in trades_df.columns else len(trades_df)
+            st.caption(
+                f"{n_full} completed trades (+ {len(trades_df) - n_full} partial exits shown) "
+                f"· Avg return {metrics['Avg Trade Return (%)']:+.2f}% per trade"
+            )
 
     except Exception as e:
         st.error(f"Could not run backtest: {e}")
@@ -927,6 +1081,87 @@ in abbreviated form: **T** = trillion, **B** = billion, **M** = million.
 
 Always perform your own due diligence before making any investment decision.
 """)
+
+    st.divider()
+
+    st.subheader("How the Strategy Protects Your Position")
+    st.markdown("""
+**5-Tier Profit-Taking Ladder**
+
+Rather than holding 100% of a position until a Bear regime exit, the strategy incrementally
+realises gains as price advances:
+
+| Tier | Gain from Entry | Fraction Sold |
+|---|---|---|
+| 1 | +15% | 10% of original position |
+| 2 | +30% | 15% of original position |
+| 3 | +45% | 20% of original position |
+| 4 | +60% | 30% of original position |
+| 5 | +100% | 50% of *remaining* position |
+
+By +60%, approximately 75% of your original position has been de-risked into realised gains.
+Anything above +100% is held until a Bear regime exit or trailing stop — no further automatic sells.
+
+**Trailing Stop**
+
+Once you are in a position, a moving floor protects against giving back large gains.
+If price falls 5% below its peak since entry, the remaining position closes immediately —
+regardless of regime. This fires before checking for a Bear regime exit on the same bar.
+
+**3-Bar Regime Filter**
+
+The HMM model requires 3 consecutive hourly bars in a new regime before that regime is
+confirmed. A single-candle regime spike is reverted to the prior confirmed regime.
+This prevents false signals from transient noise.
+
+**Bear Regime Exit**
+
+When the HMM detects a confirmed Bear regime (3+ consecutive Bear bars), any open
+remaining position closes immediately, regardless of current gain or loss.
+""")
+
+    st.divider()
+
+    st.subheader("Understanding Bull, Bear, and Neutral Regimes")
+    st.markdown("""
+The HMM groups all hourly bars into hidden states based on three features: **Returns**
+(hourly price change), **Range** (high−low spread), and **Vol_Change** (hourly volume shift).
+
+**Bull** — the state with the highest average hourly return. Typically characterised by
+positive price momentum and controlled volatility.
+
+**Bear** — the state with the lowest average hourly return. Associated with negative price
+movement or sharp drawdowns.
+
+**Neutral** — all remaining states. Neither strongly bullish nor bearish. A Neutral regime
+is **not a sell signal** — open positions remain open during Neutral periods.
+
+**Regime vs Signal:** A regime describes the current market character. A *Signal* is
+generated only when the regime is Bull AND at least 8 of 10 technical confirmations pass.
+You can be in a Bull regime without a LONG signal if confirmations are weak.
+
+Regime changes take effect only after the 3-bar minimum duration filter confirms them.
+""")
+
+    st.divider()
+
+    st.subheader("Model & Strategy Parameters")
+    params = {
+        "Initial Capital":     "$20,000",
+        "Leverage":            "1.5×",
+        "Cooldown After Exit": "72 bars (hours)",
+        "Min Confirmations":   "8 / 10",
+        "HMM States":          str(n_states),
+        "MIN_REGIME_BARS":     "3",
+        "TRAILING_STOP_PCT":   "5%",
+        "Exit Tier 1":         "+15% → sell 10% of position",
+        "Exit Tier 2":         "+30% → sell 15% of position",
+        "Exit Tier 3":         "+45% → sell 20% of position",
+        "Exit Tier 4":         "+60% → sell 30% of position",
+        "Exit Tier 5":         "+100% → sell 50% of remaining",
+    }
+    params_df = pd.DataFrame(params.items(), columns=["Parameter", "Value"])
+    st.dataframe(params_df, use_container_width=True, hide_index=True)
 
     st.divider()
     st.caption("Built with Streamlit · Plotly · hmmlearn · yfinance · Python 3.12+")
