@@ -814,8 +814,7 @@ with tab_dashboard:
 # TAB 2 — BACKTEST DETAILS
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_backtest:
-    st.subheader(f"Backtest — {TICKER_LABELS[selected_ticker]}/USD")
-
+    label = TICKER_LABELS.get(selected_ticker, selected_ticker)
     try:
         if position_mode == "user_defined" and user_exit_ladder:
             try:
@@ -864,35 +863,47 @@ with tab_backtest:
         except Exception as e:
             st.warning(f"Replay unavailable: {e}")
 
-        # Equity curve chart
+        # Equity chart
         eq_fig = build_equity_chart(equity_curve, bh_curve, selected_ticker)
+        st.markdown(f"""
+<div class="hmm-chart-card">
+  <div class="hmm-chart-head">
+    <div class="hmm-chart-title">Portfolio Equity vs Buy &amp; Hold — {label}/USD</div>
+    <div class="hmm-chart-badges">
+      <span class="hmm-badge hmm-badge-strat">Strategy</span>
+      <span class="hmm-badge hmm-badge-bh">Buy &amp; Hold</span>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
         st.plotly_chart(eq_fig, use_container_width=True, key="eq_chart")
 
-        # ── Trade log ──────────────────────────────────────────────────────────
-        st.subheader("Trade Log")
-        if len(trades_df) == 0:
-            st.info("No completed trades in this period. "
-                    "Try a longer window or different ticker.")
+        # Trade log
+        n_trades  = len(trades_df)
+        avg_ret   = metrics.get("Avg Trade Return (%)", 0)
+        caption   = f"{n_trades} trades · Avg {avg_ret:+.2f}% per trade"
+        st.markdown(f"""
+<div class="hmm-tradelog-card">
+  <div class="hmm-tradelog-head">
+    <div class="hmm-tradelog-title">Trade Log</div>
+    <div class="hmm-tradelog-meta">{caption}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+        if n_trades == 0:
+            st.info("No completed trades in this period. Try a longer window or different ticker.")
         else:
-            # Colour PnL column
             def color_ret(val):
                 try:
-                    v = float(val)
-                    return "color: #00c96a" if v > 0 else "color: #e03535"
+                    return "color: #00c96a" if float(val) > 0 else "color: #e03535"
                 except Exception:
                     return ""
-
             st.dataframe(
                 trades_df.style.map(color_ret, subset=["Return %"]),
-                use_container_width = True,
-                hide_index          = False,
+                use_container_width=True,
+                hide_index=False,
             )
-            n_full = len(trades_df[trades_df["Is Partial"] == False]) if "Is Partial" in trades_df.columns else len(trades_df)
-            st.caption(
-                f"{n_full} completed trades (+ {len(trades_df) - n_full} partial exits shown) "
-                f"· Avg return {metrics['Avg Trade Return (%)']:+.2f}% per trade"
-            )
-
     except Exception as e:
         st.error(f"Could not run backtest: {e}")
 

@@ -374,6 +374,18 @@ hr { display: none !important; }
 .hmm-badge-vol    { background:var(--bg3); color:var(--t3); }
 .hmm-badge-strat  { background:rgba(0,201,106,.12); color:var(--bull); }
 .hmm-badge-bh     { background:rgba(123,104,238,.12); color:#7b68ee; }
+
+/* ── Trade Log Card ──────────────────────────────────────────────── */
+.hmm-tradelog-card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+}
+.hmm-tradelog-head {
+  padding:11px 16px; border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.hmm-tradelog-title { font-size:13.5px; font-weight:600; color:var(--t1); }
+.hmm-tradelog-meta  { font-size:11.5px; color:var(--t3); }
 </style>
 
 <script>
