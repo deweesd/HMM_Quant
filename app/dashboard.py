@@ -215,31 +215,6 @@ def fetch_circ_supply(ticker: str) -> str:
         return "N/A"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# HELPER: Sparkline figure
-# ══════════════════════════════════════════════════════════════════════════════
-
-def make_sparkline(prices: pd.Series, positive: bool) -> go.Figure:
-    """Tiny borderless single line chart for ticker cards (7-day price trend)."""
-    color = "#00c96a" if positive else "#e03535"
-    fig = go.Figure(go.Scatter(
-        x = prices.index,
-        y = prices.values,
-        mode      = "lines",
-        line      = dict(color=color, width=1.2),
-        showlegend = False,
-        hovertemplate = "%{y:.2f}<extra></extra>",
-    ))
-    fig.update_layout(
-        height      = 35,
-        margin      = dict(l=0, r=0, t=0, b=0),
-        xaxis       = dict(visible=False),
-        yaxis       = dict(visible=False),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor  = "rgba(0,0,0,0)",
-    )
-    return fig
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPER: Regime colour spans for candlestick background
