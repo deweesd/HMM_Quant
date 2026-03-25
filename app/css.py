@@ -423,7 +423,6 @@ section[data-testid="stMain"] { overflow-x: hidden; }
 @media (max-width: 900px) {
   .hmm-cards        { grid-template-columns: repeat(2,1fr) !important; }
   .hmm-metrics-grid { grid-template-columns: repeat(3,1fr) !important; }
-  .hmm-about-grid   { grid-template-columns: 1fr !important; }
   .hmm-hero         { flex-direction: column !important; gap: 14px !important; }
   .hmm-hero-stats   { flex-wrap: wrap !important; gap: 14px !important; }
 }
@@ -436,7 +435,6 @@ section[data-testid="stMain"] { overflow-x: hidden; }
   .hmm-hero-stats   { flex-wrap: wrap !important; width: 100% !important; }
   .hmm-signal-pill  { font-size: 18px !important; padding: 8px 16px !important; }
   .hmm-conf-body    { grid-template-columns: 1fr !important; }
-  .hmm-about-grid   { grid-template-columns: 1fr !important; }
   .block-container  { padding: 0.75rem 0.75rem 2rem !important; }
 }
 

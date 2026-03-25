@@ -814,7 +814,7 @@ with tab_backtest:
         try:
             replay = load_replay(selected_ticker, period, n_states)
             if replay:
-                st.subheader("Last 5 Completed LONG Trades")
+                _section_label("Last 5 Completed LONG Trades")
                 for trade in replay:
                     ret_color   = "#00c96a" if trade["total_return_pct"] >= 0 else "#e03535"
                     pnl_sign    = "+" if trade["pnl_usd"] >= 0 else ""
@@ -834,7 +834,6 @@ with tab_backtest:
                         unsafe_allow_html=True,
                     )
                     st.caption(f"Partials fired: {partials_str}  ·  Peak gain: {trade['peak_gain_pct']:+.1f}%")
-                    st.markdown("---")
         except Exception as e:
             st.warning(f"Replay unavailable: {e}")
 
