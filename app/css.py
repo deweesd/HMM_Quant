@@ -413,6 +413,37 @@ hr { display: none !important; }
   border-radius:var(--radius-sm); padding:11px 14px;
   font-size:12px; color:var(--t2); line-height:1.6;
 }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+html, body { overflow-x: hidden; max-width: 100vw; }
+section[data-testid="stMain"] { overflow-x: hidden; }
+.block-container { overflow-x: hidden; }
+
+/* Tablet ≤ 900px */
+@media (max-width: 900px) {
+  .hmm-cards        { grid-template-columns: repeat(2,1fr) !important; }
+  .hmm-metrics-grid { grid-template-columns: repeat(3,1fr) !important; }
+  .hmm-about-grid   { grid-template-columns: 1fr !important; }
+  .hmm-hero         { flex-direction: column !important; gap: 14px !important; }
+  .hmm-hero-stats   { flex-wrap: wrap !important; gap: 14px !important; }
+}
+
+/* Mobile ≤ 600px */
+@media (max-width: 600px) {
+  .hmm-cards        { grid-template-columns: repeat(2,1fr) !important; gap:10px !important; }
+  .hmm-metrics-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .hmm-hero         { padding: 14px !important; }
+  .hmm-hero-stats   { flex-wrap: wrap !important; width: 100% !important; }
+  .hmm-signal-pill  { font-size: 18px !important; padding: 8px 16px !important; }
+  .hmm-conf-body    { grid-template-columns: 1fr !important; }
+  .hmm-about-grid   { grid-template-columns: 1fr !important; }
+  .block-container  { padding: 0.75rem 0.75rem 2rem !important; }
+}
+
+/* Very small ≤ 380px */
+@media (max-width: 380px) {
+  .hmm-cards { grid-template-columns: 1fr !important; }
+}
 </style>
 
 <script>
