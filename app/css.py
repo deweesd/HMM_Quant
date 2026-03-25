@@ -53,6 +53,97 @@ body.hmm-light {
   --bear-bg:     rgba(220,38,38,0.08);
   --shadow:      0 2px 8px rgba(79,70,229,0.08), 0 0 1px rgba(79,70,229,0.12);
 }
+
+/* ── Streamlit internals ─────────────────────────────────────────── */
+
+/* Hide native header; custom topbar is rendered via st.markdown */
+[data-testid="stHeader"] { display: none !important; }
+
+/* Main content area */
+.block-container {
+  padding: 1rem 1.5rem 2rem !important;
+  max-width: 100% !important;
+}
+section[data-testid="stMain"] {
+  background: var(--bg0);
+  overflow-x: hidden;
+}
+
+/* Tighten vertical spacing between stacked elements */
+.stVerticalBlock { gap: 0.6rem !important; }
+.element-container { margin-bottom: 0 !important; }
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+  background: var(--bg1) !important;
+  border-right: 1px solid var(--border) !important;
+}
+[data-testid="stSidebarContent"] { padding: 1.25rem 1rem !important; }
+
+/* Sidebar widget labels */
+[data-testid="stSidebar"] label {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+}
+
+/* Selectbox and slider inputs in sidebar */
+[data-testid="stSidebar"] [data-baseweb="select"] > div,
+[data-testid="stSidebar"] .stSlider {
+  background: var(--bg2) !important;
+  border-color: var(--border2) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Tabs: pill style */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+  background: transparent !important;
+  gap: 4px !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding-bottom: 0 !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+  background: transparent !important;
+  border-radius: 20px 20px 0 0 !important;
+  color: var(--t2) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  padding: 8px 20px !important;
+  transition: var(--transition) !important;
+}
+[data-testid="stTabs"] [aria-selected="true"] {
+  background: var(--accent-glow) !important;
+  color: var(--accent-lt) !important;
+  font-weight: 600 !important;
+}
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] { display: none !important; }
+[data-testid="stTabs"] [data-baseweb="tab-border"]    { display: none !important; }
+
+/* st.metric */
+[data-testid="stMetric"] {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 12px 14px !important;
+}
+[data-testid="stMetricLabel"] {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  color: var(--t3) !important;
+}
+[data-testid="stMetricValue"] {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: var(--t1) !important;
+}
+[data-testid="stMetricDelta"] { font-size: 11.5px !important; }
+
+/* Remove dividers (they are deleted from code, but guard any that remain) */
+hr { display: none !important; }
 </style>
 
 <script>
