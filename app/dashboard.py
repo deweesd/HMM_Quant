@@ -158,7 +158,7 @@ def load_ticker(ticker: str, period: str, n_states: int) -> dict:
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_backtest(ticker: str, period: str, n_states: int,
                   position_mode: str = "recommended") -> tuple:
-    """Run backtest for one ticker (cached 1 hour, recommended mode only)."""
+    """Run backtest for one ticker (cached 1 hour). position_mode defaults to 'recommended'."""
     result = load_ticker(ticker, period, n_states)
     return run_backtest(result["df"], position_mode=position_mode)
 
@@ -1024,6 +1024,9 @@ around the Bull/Bear boundary.
 | **Data Window** | 365d or 730d of hourly history |
 | **HMM States** | Number of hidden regimes (4–8). More states = finer granularity |
 | **Chart Bars** | How many hourly bars the candlestick chart displays |
+| **Exit Strategy: Position Mode** | Select "Recommended" (built-in 5-tier ladder) or "User Defined" (custom tiers). Default: Recommended. |
+| **Exit Strategy: Position Size (USD)** | Hypothetical capital to size the Scenario Calculator. Default: $1,000. |
+| **Exit Strategy: Custom Exit Ladder** | (User Defined only) Define 5 custom profit-taking tiers: gain % threshold and fraction to sell. |
 
 Changing any control triggers a full re-run with 1-hour cache.
 
