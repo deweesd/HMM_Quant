@@ -386,6 +386,33 @@ hr { display: none !important; }
 }
 .hmm-tradelog-title { font-size:13.5px; font-weight:600; color:var(--t1); }
 .hmm-tradelog-meta  { font-size:11.5px; color:var(--t3); }
+
+/* ── About Tab ───────────────────────────────────────────────────── */
+.hmm-about-card {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow);
+  margin-bottom:18px;
+}
+.hmm-about-card h3 {
+  font-size:14px; font-weight:700; color:var(--t1);
+  padding-bottom:10px; border-bottom:1px solid var(--border); margin-bottom:12px;
+}
+.hmm-about-card p, .hmm-about-card li {
+  font-size:13px; color:var(--t2); line-height:1.65;
+}
+.hmm-about-card ul { padding-left:16px; display:flex; flex-direction:column; gap:4px; }
+.hmm-stat-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;
+}
+.hmm-stat-row:last-child { border-bottom:none; }
+.hmm-stat-key { color:var(--t3); font-weight:500; }
+.hmm-stat-val { color:var(--t1); font-weight:600; }
+.hmm-disclaimer {
+  background:var(--bear-bg); border:1px solid rgba(239,68,68,.15);
+  border-radius:var(--radius-sm); padding:11px 14px;
+  font-size:12px; color:var(--t2); line-height:1.6;
+}
 </style>
 
 <script>
