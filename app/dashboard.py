@@ -733,6 +733,14 @@ def render_metrics_snapshot(m: dict, ticker: str) -> None:
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _section_label(text: str) -> None:
+    st.markdown(
+        f'<div style="font-size:12px;font-weight:600;letter-spacing:.07em;'
+        f'text-transform:uppercase;color:var(--t3);margin:4px 0 -4px;">{text}</div>',
+        unsafe_allow_html=True,
+    )
+
+
 st.markdown("# HMM Quant Trades")
 
 tab_dashboard, tab_backtest, tab_readme = st.tabs(
@@ -745,79 +753,36 @@ tab_dashboard, tab_backtest, tab_readme = st.tabs(
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_dashboard:
 
-    # ── Load all 4 tickers for top cards ──────────────────────────────────────
-    with st.spinner("Loading market data and training HMM models…"):
+    # ── Load all tickers ──────────────────────────────────────────────────────
+    with st.spinner("Loading market data…"):
         all_data = {}
-        for t in TICKERS:
+        for ticker in TICKERS:
             try:
-                all_data[t] = load_ticker(t, period, n_states)
+                all_data[ticker] = load_ticker(ticker, period, n_states)
             except Exception as e:
-                st.error(f"Failed to load {t}: {e}")
+                st.warning(f"Could not load {ticker}: {e}")
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # ROW 1 — TICKER OVERVIEW CARDS
-    # ══════════════════════════════════════════════════════════════════════════
-    st.markdown('<div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;">Market Overview</div>', unsafe_allow_html=True)
-    render_ticker_cards(all_data)
-
-    render_sentiment_strip(all_data)
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # ROW 2 — HERO SIGNAL BANNER
-    # ══════════════════════════════════════════════════════════════════════════
+    # ── Hero Banner ───────────────────────────────────────────────────────────
     if selected_ticker in all_data:
         res    = all_data[selected_ticker]
         df_sel = res["df"]
         latest = df_sel.iloc[-1]
         render_hero_banner(df_sel, selected_ticker, latest)
 
-        signal  = str(latest["Signal"])
-        regime  = str(latest["Regime"])
-        n_conf  = int(latest["Confirmations"])
+    # ── Market Overview ───────────────────────────────────────────────────────
+    _section_label("Market Overview")
+    render_ticker_cards(all_data)
+    render_sentiment_strip(all_data)
 
-        # ── Scenario Calculator (only shown when signal is LONG) ───────────────
-        if signal == "LONG":
-            try:
-                if position_mode == "user_defined" and user_exit_ladder:
-                    try:
-                        validated_ladder = build_exit_thresholds("user_defined", user_exit_ladder)
-                        scenario = get_scenario(
-                            df_sel, selected_ticker, position_usd, validated_ladder
-                        )
-                    except ValueError as e:
-                        st.warning(f"Invalid custom ladder: {e} — showing recommended.")
-                        scenario = load_scenario(selected_ticker, period, n_states, position_usd)
-                else:
-                    scenario = load_scenario(selected_ticker, period, n_states, position_usd)
-
-                st.markdown("#### Scenario Calculator")
-                sc1, sc2, sc3, sc4 = st.columns(4)
-                sc1.metric("Entry Price",    f"${scenario['entry_price']:,.2f}")
-                sc2.metric("HMM Confidence", f"{scenario['hmm_confidence']:.0%}")
-                sc3.metric("Regime Bars",    f"{scenario['regime_bars']}h confirmed")
-                sc4.metric("Trailing Stop",  f"${scenario['trailing_stop_price']:,.2f}",
-                           delta=f"${scenario['trailing_stop_loss']:,.0f} max loss",
-                           delta_color="inverse")
-
-                # Exit schedule table
-                sched_df = pd.DataFrame(scenario["exit_schedule"])
-                sched_df.columns = ["Tier", "Trigger Price ($)", "USD Realised", "USD Remaining"]
-                st.dataframe(sched_df, use_container_width=True, hide_index=True)
-                st.caption(
-                    f"Risk/Reward: {scenario['risk_reward_ratio']:.1f}×  ·  "
-                    f"Avg trade duration: {scenario['avg_trade_duration_h']:.0f}h"
-                )
-            except Exception as e:
-                st.warning(f"Scenario unavailable: {e}")
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # ROW 3 — CANDLESTICK CHART
-    # ══════════════════════════════════════════════════════════════════════════
-    st.subheader(f"Price Chart — {TICKER_LABELS[selected_ticker]}/USD")
-
+    # ── Price Chart ───────────────────────────────────────────────────────────
     if selected_ticker in all_data:
-        df_plot = all_data[selected_ticker]["df"].tail(chart_bars)
-        chart   = build_candlestick(df_plot, selected_ticker)
+        res    = all_data[selected_ticker]
+        df_sel = res["df"]
+        latest = df_sel.iloc[-1]
+        _section_label("Price Chart")
+        chart = build_candlestick(
+            df_sel.iloc[-chart_bars:], selected_ticker
+        )
         label = TICKER_LABELS.get(selected_ticker, selected_ticker)
         st.markdown(f"""
 <div class="hmm-chart-card">
@@ -832,33 +797,14 @@ with tab_dashboard:
 </div>
 """, unsafe_allow_html=True)
         st.plotly_chart(chart, use_container_width=True, key="main_chart")
-
-        # ── Confirmation checklist ─────────────────────────────────────────────
         render_conf_panel(latest)
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # ROW 4 — BACKTEST METRICS
-    # ══════════════════════════════════════════════════════════════════════════
-    st.markdown('<div style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;">Backtest Snapshot</div>', unsafe_allow_html=True)
+    # ── Backtest Snapshot ─────────────────────────────────────────────────────
+    _section_label("Backtest Snapshot")
     try:
-        if position_mode == "user_defined" and user_exit_ladder:
-            try:
-                validated_ladder = build_exit_thresholds("user_defined", user_exit_ladder)
-                result_data = load_ticker(selected_ticker, period, n_states)
-                equity_curve, bh_curve, trades_df, metrics = run_backtest(
-                    result_data["df"],
-                    position_mode="user_defined",
-                    user_exit_ladder=validated_ladder,
-                )
-            except ValueError as e:
-                st.warning(f"Invalid custom ladder: {e} — using recommended.")
-                equity_curve, bh_curve, trades_df, metrics = load_backtest(
-                    selected_ticker, period, n_states
-                )
-        else:
-            equity_curve, bh_curve, trades_df, metrics = load_backtest(
-                selected_ticker, period, n_states
-            )
+        equity_curve, bh_curve, trades_df, metrics = load_backtest(
+            selected_ticker, period, n_states
+        )
         render_metrics_snapshot(metrics, selected_ticker)
     except Exception as e:
         st.error(f"Backtest error: {e}")
