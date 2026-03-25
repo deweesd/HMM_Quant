@@ -33,7 +33,7 @@ from models.hmm        import N_STATES
 from strategy.backtest import run_backtest
 from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER
 from strategy.explain import get_scenario, get_historical_replay
-from app.css import DASHBOARD_CSS, LIGHT_MODE_CSS, SIDEBAR_HIDDEN_CSS
+from app.css import DASHBOARD_CSS, LIGHT_MODE_CSS
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -51,20 +51,11 @@ st.markdown(DASHBOARD_CSS, unsafe_allow_html=True)
 # ── Theme state ────────────────────────────────────────────────────────────────
 if "light_mode" not in st.session_state:
     st.session_state.light_mode = False
-if "sidebar_visible" not in st.session_state:
-    st.session_state.sidebar_visible = True
 if st.session_state.light_mode:
     st.markdown(LIGHT_MODE_CSS, unsafe_allow_html=True)
-if not st.session_state.sidebar_visible:
-    st.markdown(SIDEBAR_HIDDEN_CSS, unsafe_allow_html=True)
 
 st.markdown('<div id="hmm-topbar-anchor"></div>', unsafe_allow_html=True)
-_topbar_sidebar, _topbar_logo, _topbar_gh, _topbar_btn = st.columns([1, 12, 1, 1])
-with _topbar_sidebar:
-    _sidebar_icon = "✕" if st.session_state.sidebar_visible else "☰"
-    if st.button(_sidebar_icon, key="sidebar_toggle_btn", help="Show / hide sidebar"):
-        st.session_state.sidebar_visible = not st.session_state.sidebar_visible
-        st.rerun()
+_topbar_logo, _topbar_gh, _topbar_btn = st.columns([13, 1, 1])
 with _topbar_logo:
     st.markdown("""
 <div style="display:flex; align-items:center; padding:10px 0 14px;
