@@ -144,6 +144,85 @@ section[data-testid="stMain"] {
 
 /* Remove dividers (they are deleted from code, but guard any that remain) */
 hr { display: none !important; }
+
+/* ── Hero Signal Banner ──────────────────────────────────────────── */
+.hmm-hero {
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%);
+  padding: 22px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 4px;
+}
+.hmm-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; left: -40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hmm-hero-ticker {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--t2); margin-bottom: 8px;
+}
+.hmm-signal-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border-radius: 40px;
+  font-size: 22px; font-weight: 800; letter-spacing: 0.04em;
+}
+.hmm-signal-pill.long {
+  background: var(--bull-bg); color: var(--bull);
+  border: 1.5px solid rgba(0,201,106,0.3);
+  box-shadow: 0 0 28px rgba(0,201,106,0.15);
+}
+.hmm-signal-pill.short {
+  background: var(--bear-bg); color: var(--bear);
+  border: 1.5px solid rgba(239,68,68,0.3);
+  box-shadow: 0 0 28px rgba(239,68,68,0.15);
+}
+.hmm-signal-pill.neutral {
+  background: var(--neut-bg); color: var(--neut);
+  border: 1.5px solid rgba(107,114,128,0.3);
+}
+.hmm-pulse { width:9px; height:9px; border-radius:50%; animation: hmm-pulse 2s ease-in-out infinite; }
+.hmm-signal-pill.long  .hmm-pulse { background: var(--bull); }
+.hmm-signal-pill.short .hmm-pulse { background: var(--bear); }
+.hmm-signal-pill.neutral .hmm-pulse { background: var(--neut); }
+@keyframes hmm-pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.45; transform:scale(0.8); }
+}
+.hmm-regime-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 12px; border-radius:20px;
+  font-size:13px; font-weight:600;
+}
+.hmm-regime-badge.bull { background:var(--bull-bg); color:var(--bull); border:1px solid rgba(0,201,106,0.2); }
+.hmm-regime-badge.bear { background:var(--bear-bg); color:var(--bear); border:1px solid rgba(239,68,68,0.2); }
+.hmm-regime-badge.neut { background:var(--neut-bg); color:var(--neut); border:1px solid rgba(107,114,128,0.2); }
+.hmm-conf-pips { display:flex; gap:4px; align-items:center; margin-top:5px; }
+.hmm-pip {
+  width:13px; height:5px; border-radius:3px;
+  background:var(--bg3); border:1px solid var(--border2);
+}
+.hmm-pip.filled { background:var(--bull); border-color:var(--bull); }
+.hmm-hero-stats { display:flex; gap:24px; align-items:flex-start; flex-shrink:0; }
+.hmm-hero-stat { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.hmm-stat-label {
+  font-size:10px; font-weight:600; letter-spacing:0.07em;
+  text-transform:uppercase; color:var(--t3);
+}
+.hmm-stat-val { font-size:22px; font-weight:700; color:var(--t1); line-height:1; }
+.hmm-stat-val.pos { color:var(--bull); }
+.hmm-stat-val.neg { color:var(--bear); }
+.hmm-stat-val.acc { color:var(--accent-lt); }
 </style>
 
 <script>

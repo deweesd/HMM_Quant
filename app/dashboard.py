@@ -479,6 +479,66 @@ def style_summary(df: pd.DataFrame):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# HELPER: Hero Signal Banner
+# ══════════════════════════════════════════════════════════════════════════════
+
+def render_hero_banner(df: pd.DataFrame, ticker: str, latest) -> None:
+    """Render the hero signal banner for the selected ticker."""
+    signal  = str(latest["Signal"])
+    regime  = str(latest["Regime"])
+    n_conf  = int(latest["Confirmations"])
+    price   = float(df["Close"].iloc[-1])
+    pct_24h = float((price / df["Close"].iloc[-25] - 1) * 100) if len(df) > 25 else 0.0
+    label   = TICKER_LABELS.get(ticker, ticker)
+    ts      = df.index[-1].strftime("%Y-%m-%d %H:%M UTC")
+    hmm_st  = int(latest["HMM_State"])
+
+    pill_cls   = {"LONG": "long", "SHORT": "short"}.get(signal, "neutral")
+    regime_cls = {"Bull": "bull", "Bear": "bear"}.get(regime, "neut")
+    regime_icon= {"Bull": "🟢", "Bear": "🔴"}.get(regime, "⚪")
+    delta_cls  = "pos" if pct_24h >= 0 else "neg"
+    delta_sign = "▲" if pct_24h >= 0 else "▼"
+
+    pips_html = "".join(
+        f'<div class="hmm-pip{"  filled" if i < n_conf else ""}"></div>'
+        for i in range(10)
+    )
+
+    st.markdown(f"""
+<div class="hmm-hero">
+  <div>
+    <div class="hmm-hero-ticker">{label}/USD — Current Signal</div>
+    <div class="hmm-signal-pill {pill_cls}">
+      <div class="hmm-pulse"></div>{signal}
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-top:6px;">
+      {ts} &nbsp;·&nbsp; HMM State {hmm_st}
+    </div>
+  </div>
+  <div class="hmm-hero-stats">
+    <div class="hmm-hero-stat">
+      <div class="hmm-stat-label">Regime</div>
+      <div class="hmm-regime-badge {regime_cls}">{regime_icon} {regime}</div>
+    </div>
+    <div class="hmm-hero-stat">
+      <div class="hmm-stat-label">Confirmations</div>
+      <div class="hmm-stat-val">{n_conf}<span style="font-size:14px;color:var(--t3)">/10</span></div>
+      <div class="hmm-conf-pips">{pips_html}</div>
+    </div>
+    <div class="hmm-hero-stat">
+      <div class="hmm-stat-label">24h</div>
+      <div class="hmm-stat-val {delta_cls}">{delta_sign} {abs(pct_24h):.2f}%</div>
+    </div>
+    <div class="hmm-hero-stat">
+      <div class="hmm-stat-label">Price</div>
+      <div class="hmm-stat-val acc">${price:,.2f}</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -625,66 +685,17 @@ with tab_dashboard:
             )
 
     # ══════════════════════════════════════════════════════════════════════════
-    # ROW 2 — CURRENT SIGNAL + REGIME SUMMARY
+    # ROW 2 — HERO SIGNAL BANNER
     # ══════════════════════════════════════════════════════════════════════════
-    st.subheader(f"Signal & Regime — {TICKER_LABELS[selected_ticker]}/USD")
-
     if selected_ticker in all_data:
         res    = all_data[selected_ticker]
         df_sel = res["df"]
         latest = df_sel.iloc[-1]
+        render_hero_banner(df_sel, selected_ticker, latest)
 
         signal  = str(latest["Signal"])
         regime  = str(latest["Regime"])
         n_conf  = int(latest["Confirmations"])
-
-        sig_col, reg_col, conf_col, summary_col = st.columns([1, 1, 1, 3])
-
-        # Signal badge
-        with sig_col:
-            st.markdown('<p class="card-label">Current Signal</p>',
-                        unsafe_allow_html=True)
-            badge_cls = {
-                "LONG":    "signal-long",
-                "SHORT":   "signal-short",
-                "NEUTRAL": "signal-neutral",
-            }.get(signal, "signal-neutral")
-            st.markdown(f'<span class="{badge_cls}">{signal}</span>',
-                        unsafe_allow_html=True)
-            st.caption(f"As of {df_sel.index[-1].strftime('%Y-%m-%d %H:%M UTC')}")
-
-        # Regime
-        with reg_col:
-            st.markdown('<p class="card-label">Detected Regime</p>',
-                        unsafe_allow_html=True)
-            reg_cls = {"Bull": "regime-bull", "Bear": "regime-bear"}.get(
-                regime, "regime-neutral"
-            )
-            icon = {"Bull": "🟢", "Bear": "🔴", "Neutral": "⚪"}.get(regime, "⚪")
-            st.markdown(f'<span class="{reg_cls}">{icon} {regime}</span>',
-                        unsafe_allow_html=True)
-            st.caption(f"HMM State {int(latest['HMM_State'])}")
-
-        # Confirmation count
-        with conf_col:
-            st.markdown('<p class="card-label">Confirmations</p>',
-                        unsafe_allow_html=True)
-            st.markdown(
-                f"<h2 style='margin:0;color:{'#00c96a' if n_conf>=8 else '#e0e0e0'}'>"
-                f"{n_conf}/10</h2>",
-                unsafe_allow_html=True,
-            )
-            st.caption("Minimum 8/10 required for LONG")
-
-        # Regime summary table
-        with summary_col:
-            st.markdown('<p class="card-label">Regime Summary (all states)</p>',
-                        unsafe_allow_html=True)
-            st.dataframe(
-                style_summary(res["state_summary"]),
-                use_container_width = True,
-                hide_index          = True,
-            )
 
         # ── Scenario Calculator (only shown when signal is LONG) ───────────────
         if signal == "LONG":
