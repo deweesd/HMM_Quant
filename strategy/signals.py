@@ -72,11 +72,16 @@ def score_signals(df: pd.DataFrame) -> pd.DataFrame:
 
     out["Confirmations"] = out[CONFIRM_COLS].fillna(False).astype(int).sum(axis=1)
 
+    vol_gate = out["Volatility"] <= 8.0
+
     conditions = [
-        (out["Regime"] == "Bull") & (out["Confirmations"] >= 8),
+        (out["Regime"] == "Bull") & (out["Confirmations"] >= 8) & vol_gate,
         out["Regime"] == "Bear",
     ]
-    out["Signal"] = np.select(conditions, ["LONG", "SHORT"], default="NEUTRAL")
+    out["Signal"]    = np.select(conditions, ["LONG", "SHORT"], default="NEUTRAL")
+    out["Vol_Gated"] = (
+        (~vol_gate) & (out["Regime"] == "Bull") & (out["Confirmations"] >= 8)
+    )
 
     return out
 

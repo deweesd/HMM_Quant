@@ -531,6 +531,140 @@ section[data-testid="stMain"] { overflow-x: hidden; }
 @media (max-width: 380px) {
   .hmm-cards { grid-template-columns: 1fr !important; }
 }
+
+/* ── Sidebar collapsed control — always reachable ───────────────── */
+[data-testid="stSidebarCollapsedControl"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 999 !important;
+  top: 60px !important;
+}
+
+/* ── Chart marker badges ─────────────────────────────────────────── */
+.hmm-badge-buy  { background: rgba(0,201,106,0.12); color: var(--bull);
+                  border: 1px solid rgba(0,201,106,0.3); }
+.hmm-badge-sell { background: rgba(239,68,68,0.12);  color: var(--bear);
+                  border: 1px solid rgba(239,68,68,0.3); }
+
+/* ── Rangeslider theme ───────────────────────────────────────────── */
+.rangeslider-mask          { fill: rgba(255,255,255,0.04) !important; }
+.rangeslider-grabber-min,
+.rangeslider-grabber-max   { fill: var(--accent) !important; }
+
+/* ── Risk Panel ──────────────────────────────────────────────────── */
+.hmm-risk-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hmm-risk-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hmm-risk-panel-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase; color: var(--t3);
+}
+.hmm-risk-badge {
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+}
+.hmm-risk-badge.bull { background: var(--bull-bg); color: var(--bull);
+                       border: 1px solid rgba(0,201,106,0.25); }
+.hmm-risk-badge.neut { background: var(--neut-bg); color: #e0a020;
+                       border: 1px solid rgba(224,160,32,0.25); }
+.hmm-risk-badge.bear { background: var(--bear-bg); color: var(--bear);
+                       border: 1px solid rgba(239,68,68,0.25); }
+.hmm-risk-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.hmm-risk-metric {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hmm-risk-metric-lbl {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--t3);
+}
+.hmm-risk-metric-val {
+  font-size: 22px; font-weight: 700; color: var(--t1);
+}
+.hmm-risk-metric-val.bull { color: var(--bull); }
+.hmm-risk-metric-val.bear { color: var(--bear); }
+.hmm-risk-metric-val.acc  { color: var(--accent-lt); }
+.hmm-risk-metric-sub {
+  font-size: 10.5px; color: var(--t3); line-height: 1.45;
+}
+.hmm-risk-metric-sub .sig  { color: var(--bull);  font-weight: 700; }
+.hmm-risk-metric-sub .warn { color: #e0a020;       font-weight: 700; }
+.hmm-risk-metric-sub .gate { color: var(--bear);   font-weight: 700; }
+
+.hmm-vol-gate-warning {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bear-bg);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-size: 11.5px; color: var(--bear); font-weight: 600;
+}
+
+.hmm-ranking-head {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 8px;
+}
+.hmm-ranking-table { width: 100%; border-collapse: collapse; }
+.hmm-ranking-table th {
+  text-align: left;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--t3); padding: 0 10px 7px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.hmm-ranking-table td {
+  padding: 7px 10px 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--t2); vertical-align: middle;
+}
+.hmm-ranking-table tr:last-child td { border-bottom: none; }
+.hmm-rank-num  { font-size: 11px; font-weight: 700; color: var(--t3); }
+.hmm-rank-asset{ font-weight: 600; color: var(--t1); }
+.hmm-rank-tick { font-size: 10px; color: var(--t3); }
+.hmm-rank-sr   { font-weight: 700; color: var(--accent-lt); font-size: 13px; }
+.hmm-rank-sig  {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; white-space: nowrap;
+}
+.hmm-rank-sig.long    { background: var(--bull-bg); color: var(--bull); }
+.hmm-rank-sig.neutral { background: var(--neut-bg); color: var(--neut); }
+.hmm-rank-sig.short   { background: var(--bear-bg); color: var(--bear); }
+.hmm-rank-sig.gated   { background: var(--bear-bg); color: var(--bear); }
+
+/* ── Responsive additions for Risk Panel ─────────────────────────── */
+@media (max-width: 900px) {
+  .hmm-risk-metrics { grid-template-columns: 1fr 1fr !important; }
+  .hmm-ranking-table th,
+  .hmm-ranking-table td { font-size: 11px !important; }
+}
+@media (max-width: 600px) {
+  .hmm-risk-metrics { grid-template-columns: 1fr !important; }
+  .hmm-ranking-table th,
+  .hmm-ranking-table td { font-size: 10px !important; padding: 5px 6px 5px 0 !important; }
+  .hmm-risk-panel   { padding: 14px !important; }
+}
 </style>
 
 <script>

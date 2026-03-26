@@ -31,7 +31,7 @@ from strategy.signals  import get_ticker_data, CONFIRM_COLS, CONFIRM_LABELS
 from pipeline.download import TICKERS, TICKER_LABELS
 from models.hmm        import N_STATES
 from strategy.backtest import run_backtest
-from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER
+from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER  # noqa: F401
 from strategy.explain import get_scenario, get_historical_replay
 from app.css import DASHBOARD_CSS, LIGHT_MODE_CSS
 
@@ -117,15 +117,6 @@ with st.sidebar:
         max_value = 8,
         value     = N_STATES,
         help      = "Number of hidden market regimes to detect.",
-    )
-
-    chart_bars = st.slider(
-        "Chart — bars to show",
-        min_value = 168,
-        max_value = 2000,
-        value     = 500,
-        step      = 100,
-        help      = "Number of hourly bars displayed in the candlestick chart.",
     )
 
     st.subheader("Exit Strategy")
@@ -277,8 +268,12 @@ def get_regime_spans(df: pd.DataFrame) -> list:
 def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
     """
     2-row plotly chart:
-      Row 1 (75%): Candlestick + EMA20 + EMA200 + regime background
+      Row 1 (75%): Candlestick + EMA20 + EMA200 + BUY/SELL markers + regime background
       Row 2 (25%): Volume bars coloured by up/down candle
+
+    Default view: last 90 calendar days. Full history available via rangeslider.
+    BUY  markers: green ▲ at signal transition to LONG (with exit-target hover)
+    SELL markers: red   ▼ at Bear regime flip while previously LONG
 
     NOTE: We use fig.add_shape(row=1) for regime bands rather than
     fig.add_vrect() because vrect ignores the row= parameter and
@@ -287,12 +282,12 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
     spans = get_regime_spans(df_plot)
 
     fig = make_subplots(
-        rows              = 2,
-        cols              = 1,
-        shared_xaxes      = True,
-        row_heights       = [0.75, 0.25],
-        vertical_spacing  = 0.02,
-        subplot_titles    = ("", ""),
+        rows             = 2,
+        cols             = 1,
+        shared_xaxes     = True,
+        row_heights      = [0.75, 0.25],
+        vertical_spacing = 0.02,
+        subplot_titles   = ("", ""),
     )
 
     # ── Regime background (row 1 only) ────────────────────────────────────────
@@ -300,7 +295,7 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
         fig.add_shape(
             type      = "rect",
             xref      = "x",
-            yref      = "y domain",    # fraction of row-1 height
+            yref      = "y domain",
             x0        = span["start"],
             x1        = span["end"],
             y0        = 0,
@@ -308,7 +303,7 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
             fillcolor = REGIME_FILL.get(span["regime"], REGIME_FILL["Neutral"]),
             line_width = 0,
             layer     = "below",
-            row = 1, col = 1,
+            row=1, col=1,
         )
 
     # ── Candlestick ───────────────────────────────────────────────────────────
@@ -319,8 +314,8 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
         low    = df_plot["Low"],
         close  = df_plot["Close"],
         name   = "Price",
-        increasing_line_color  = "#26a69a",
-        decreasing_line_color  = "#ef5350",
+        increasing_line_color = "#26a69a",
+        decreasing_line_color = "#ef5350",
         whiskerwidth = 0.3,
     ), row=1, col=1)
 
@@ -341,30 +336,97 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
         line = dict(color="#7b68ee", width=1.5),
     ), row=1, col=1)
 
+    # ── BUY markers ───────────────────────────────────────────────────────────
+    if "Signal" in df_plot.columns:
+        buy_mask = (df_plot["Signal"] == "LONG") & (df_plot["Signal"].shift(1) != "LONG")
+        df_buy   = df_plot[buy_mask]
+        if not df_buy.empty:
+            custom_buy = []
+            for _, row in df_buy.iterrows():
+                ep      = row["Close"]
+                targets = "<br>".join(
+                    f"  +{t['gain_pct']}% → ${ep * (1 + t['gain_pct'] / 100):,.0f}"
+                    f" (sell {int(t['sell_fraction'] * 100)}%)"
+                    for t in RECOMMENDED_LADDER
+                )
+                custom_buy.append(
+                    f"Entry: ${ep:,.2f}<br>Exit targets:<br>{targets}"
+                    f"<br>Stop loss: ${ep * 0.95:,.2f} (−5% trailing)"
+                )
+            fig.add_trace(go.Scatter(
+                x             = df_buy.index,
+                y             = df_buy["Low"] * 0.995,
+                mode          = "markers",
+                name          = "BUY",
+                marker        = dict(
+                    symbol = "triangle-up",
+                    size   = 10,
+                    color  = "#00c96a",
+                    line   = dict(color="#00c96a", width=1),
+                ),
+                customdata    = custom_buy,
+                hovertemplate = "<b>🟢 BUY SIGNAL</b><br>%{customdata}<extra></extra>",
+                showlegend    = False,
+            ), row=1, col=1)
+
+    # ── SELL markers ──────────────────────────────────────────────────────────
+    if "Regime" in df_plot.columns and "Signal" in df_plot.columns:
+        sell_mask = (
+            (df_plot["Regime"] == "Bear") &
+            (df_plot["Regime"].shift(1) != "Bear") &
+            (df_plot["Signal"].shift(1) == "LONG")
+        )
+        df_sell = df_plot[sell_mask]
+        if not df_sell.empty:
+            custom_sell = [
+                f"Exit price: ${row['Close']:,.2f}"
+                for _, row in df_sell.iterrows()
+            ]
+            fig.add_trace(go.Scatter(
+                x             = df_sell.index,
+                y             = df_sell["High"] * 1.005,
+                mode          = "markers",
+                name          = "SELL",
+                marker        = dict(
+                    symbol = "triangle-down",
+                    size   = 10,
+                    color  = "#ef4444",
+                    line   = dict(color="#ef4444", width=1),
+                ),
+                customdata    = custom_sell,
+                hovertemplate = "<b>🔴 EXIT — Bear Regime</b><br>%{customdata}<extra></extra>",
+                showlegend    = False,
+            ), row=1, col=1)
+
     # ── Volume bars ───────────────────────────────────────────────────────────
     vol_colors = [
         "#26a69a" if c >= o else "#ef5350"
         for o, c in zip(df_plot["Open"], df_plot["Close"])
     ]
     fig.add_trace(go.Bar(
-        x          = df_plot.index,
-        y          = df_plot["Volume"],
-        name       = "Volume",
+        x            = df_plot.index,
+        y            = df_plot["Volume"],
+        name         = "Volume",
         marker_color = vol_colors,
-        opacity    = 0.7,
-        showlegend = False,
+        opacity      = 0.7,
+        showlegend   = False,
     ), row=2, col=1)
+
+    # ── 90-day default range ──────────────────────────────────────────────────
+    range_end   = df_plot.index[-1]
+    range_start = range_end - pd.Timedelta(days=90)
 
     # ── Layout ────────────────────────────────────────────────────────────────
     label = TICKER_LABELS.get(ticker, ticker)
     fig.update_layout(
-        title            = dict(
-            text     = f"{label}/USD — Hourly Candlestick with Regime Overlay",
-            font     = dict(size=14, color="#e0e0e0"),
-            x        = 0.01,
+        title = dict(
+            text  = f"{label}/USD — Hourly Chart with Regime Overlay",
+            font  = dict(size=14, color="#e0e0e0"),
+            x     = 0.01,
         ),
-        xaxis_rangeslider_visible = False,
-        height      = 560,
+        xaxis_rangeslider_visible   = True,
+        xaxis_rangeslider_thickness = 0.04,
+        height        = 580,
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor  = "rgba(0,0,0,0)",
         font          = dict(color="#e0e0e0"),
@@ -377,27 +439,20 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
             font        = dict(size=10),
         ),
         margin = dict(l=10, r=10, t=50, b=10),
+        xaxis  = dict(range=[range_start, range_end]),
     )
     fig.update_xaxes(
-        showgrid    = True,
-        gridcolor   = "#222",
-        gridwidth   = 0.5,
-        showspikes  = True,
-        spikecolor  = "#555",
+        showgrid       = True,
+        gridcolor      = "#222",
+        gridwidth      = 0.5,
+        showspikes     = True,
+        spikecolor     = "#555",
         spikethickness = 1,
     )
-    fig.update_yaxes(
-        showgrid  = True,
-        gridcolor = "#222",
-        gridwidth = 0.5,
-        row=1, col=1,
-    )
-    fig.update_yaxes(
-        showgrid  = False,
-        row=2, col=1,
-    )
+    fig.update_yaxes(showgrid=True,  gridcolor="#222", gridwidth=0.5, row=1, col=1)
+    fig.update_yaxes(showgrid=False, row=2, col=1)
 
-    # ── Regime legend annotation ──────────────────────────────────────────────
+    # ── Regime legend annotations ─────────────────────────────────────────────
     for regime, color in [("Bull", "#00c96a"), ("Bear", "#e03535"), ("Neutral", "#888")]:
         fig.add_annotation(
             text      = f"■ {regime}",
@@ -729,6 +784,153 @@ def render_metrics_snapshot(m: dict, ticker: str) -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# HELPER: Risk metrics (σ, Sharpe, t-stat)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def compute_risk_metrics(df: pd.DataFrame) -> dict:
+    """Compute σ, Sharpe, t-stat, and risk rating for the Risk Panel."""
+    sigma   = float(df["Volatility"].iloc[-1])
+    returns = df["Returns"].dropna()
+    n       = len(returns)
+    sharpe  = (
+        float(returns.mean() / returns.std() * np.sqrt(8760))
+        if returns.std() > 0 else 0.0
+    )
+    t_stat = sharpe * np.sqrt(n)
+    sig    = t_stat > 1.96
+
+    if sigma <= 4 and sharpe >= 1.5:
+        rating, rating_cls = "Low Risk", "bull"
+    elif sigma <= 8 and sharpe >= 0.5:
+        rating, rating_cls = "Moderate", "neut"
+    else:
+        rating, rating_cls = "High Risk", "bear"
+
+    return dict(
+        sigma=sigma, sharpe=sharpe, t_stat=t_stat,
+        sig=sig, rating=rating, rating_cls=rating_cls, n=n,
+    )
+
+
+def compute_sr_ranking(all_data: dict) -> list:
+    """Return list of ticker dicts sorted by Sharpe descending."""
+    rows = []
+    for t, res in all_data.items():
+        d      = res["df"]
+        rm     = compute_risk_metrics(d)
+        signal = str(d["Signal"].iloc[-1])
+        gated  = bool(d["Vol_Gated"].iloc[-1]) if "Vol_Gated" in d.columns else False
+        rows.append(dict(
+            ticker=t, label=TICKER_LABELS[t],
+            sharpe=rm["sharpe"], sigma=rm["sigma"],
+            signal=signal, gated=gated,
+        ))
+    return sorted(rows, key=lambda r: r["sharpe"], reverse=True)
+
+
+def render_risk_panel(df: pd.DataFrame, all_data: dict, ticker: str) -> None:
+    """Render the Risk Overview panel: σ, Sharpe, t-stat, vol-gate warning, SR ranking."""
+    rm      = compute_risk_metrics(df)
+    ranking = compute_sr_ranking(all_data)
+
+    sigma_cls  = "bull" if rm["sigma"] <= 4 else ("neut" if rm["sigma"] <= 8 else "bear")
+    sharpe_cls = "bull" if rm["sharpe"] >= 1.5 else ("acc" if rm["sharpe"] >= 0.5 else "bear")
+    sig_text   = (
+        '<span class="sig">✓ p &lt; 0.05 — returns ≠ 0</span>'
+        if rm["sig"] else
+        '<span class="warn">⚠ p &gt; 0.05 — insufficient evidence</span>'
+    )
+
+    gate_html = ""
+    if "Vol_Gated" in df.columns and bool(df["Vol_Gated"].iloc[-1]):
+        gate_html = f"""
+<div class="hmm-vol-gate-warning">
+  🔴 σ = {rm["sigma"]:.1f}% exceeds 8% threshold — LONG signal suppressed.
+  High volatility reduces regime reliability.
+</div>"""
+
+    rank_rows = []
+    for i, row in enumerate(ranking, 1):
+        sr_color = (
+            "var(--bull)"      if row["sharpe"] >= 1.5 else
+            "var(--accent-lt)" if row["sharpe"] >= 0.5 else
+            "var(--bear)"
+        )
+        sig_cls = "gated" if row["gated"] else row["signal"].lower()
+        sig_lbl = (
+            "🔴 Gated" if row["gated"] else
+            "▲ LONG"   if row["signal"] == "LONG" else
+            "▼ SHORT"  if row["signal"] == "SHORT" else
+            "● NEUTRAL"
+        )
+        sigma_color = (
+            "var(--bull)" if row["sigma"] <= 4 else
+            "#e0a020"     if row["sigma"] <= 8 else
+            "var(--bear)"
+        )
+        selected = " style='background:var(--bg1);'" if row["ticker"] == ticker else ""
+        rank_rows.append(f"""
+<tr{selected}>
+  <td class="hmm-rank-num">{i}</td>
+  <td>
+    <div class="hmm-rank-asset">{row["label"]}</div>
+    <div class="hmm-rank-tick">{row["ticker"]}/USD</div>
+  </td>
+  <td class="hmm-rank-sr" style="color:{sr_color}">{row["sharpe"]:.2f}</td>
+  <td style="color:{sigma_color};font-size:12px;font-weight:600">{row["sigma"]:.1f}%</td>
+  <td><span class="hmm-rank-sig {sig_cls}">{sig_lbl}</span></td>
+</tr>""")
+
+    label = TICKER_LABELS.get(ticker, ticker)
+    st.markdown(f"""
+<div class="hmm-risk-panel">
+  <div class="hmm-risk-panel-head">
+    <div class="hmm-risk-panel-title">Risk-Adjusted Performance — {label}/USD</div>
+    <div class="hmm-risk-badge {rm['rating_cls']}">● {rm['rating']}</div>
+  </div>
+  <div class="hmm-risk-metrics">
+    <div class="hmm-risk-metric">
+      <div class="hmm-risk-metric-lbl">σ Volatility (24h)</div>
+      <div class="hmm-risk-metric-val {sigma_cls}">{rm["sigma"]:.1f}%</div>
+      <div class="hmm-risk-metric-sub">
+        Gate threshold: 8%<br>
+        {'<span class="sig">✓ Below gate — signal active</span>' if rm["sigma"] <= 8 else '<span class="gate">✗ Above gate — signal suppressed</span>'}
+      </div>
+    </div>
+    <div class="hmm-risk-metric">
+      <div class="hmm-risk-metric-lbl">Sharpe Ratio</div>
+      <div class="hmm-risk-metric-val {sharpe_cls}">{rm["sharpe"]:.2f}</div>
+      <div class="hmm-risk-metric-sub">
+        (Avg hourly return / σ) × √8760<br>
+        {'<span class="sig">Strong risk-adjusted return</span>' if rm["sharpe"] >= 1.5 else ('<span class="warn">Moderate return</span>' if rm["sharpe"] >= 0.5 else '<span class="gate">Weak return</span>')}
+      </div>
+    </div>
+    <div class="hmm-risk-metric">
+      <div class="hmm-risk-metric-lbl">t-statistic</div>
+      <div class="hmm-risk-metric-val acc">{rm["t_stat"]:.2f}</div>
+      <div class="hmm-risk-metric-sub">
+        SR × √N = SR × √{rm["n"]}<br>
+        {sig_text}
+      </div>
+    </div>
+  </div>
+  {gate_html}
+  <div>
+    <div class="hmm-ranking-head">Asset Ranking by Sharpe Ratio</div>
+    <table class="hmm-ranking-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Asset</th><th>Sharpe</th><th>σ</th><th>Signal</th>
+        </tr>
+      </thead>
+      <tbody>{''.join(rank_rows)}</tbody>
+    </table>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # MAIN APP
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -750,7 +952,7 @@ with st.spinner("Loading market data…"):
             st.warning(f"Could not load {ticker}: {e}")
 
 tab_dashboard, tab_backtest, tab_about = st.tabs(
-    ["📊 Live", "📋 Backtest", "📖 About"]
+    ["Live", "Backtest", "About"]
 )
 
 
@@ -765,6 +967,7 @@ with tab_dashboard:
         df_sel = res["df"]
         latest = df_sel.iloc[-1]
         render_hero_banner(df_sel, selected_ticker, latest)
+        render_risk_panel(df_sel, all_data, selected_ticker)
 
     # ── Market Overview ───────────────────────────────────────────────────────
     _section_label("Market Overview")
@@ -777,15 +980,15 @@ with tab_dashboard:
         df_sel = res["df"]
         latest = df_sel.iloc[-1]
         _section_label("Price Chart")
-        chart = build_candlestick(
-            df_sel.iloc[-chart_bars:], selected_ticker
-        )
+        chart = build_candlestick(df_sel, selected_ticker)
         label = TICKER_LABELS.get(selected_ticker, selected_ticker)
         st.markdown(f"""
 <div class="hmm-chart-card">
   <div class="hmm-chart-head">
     <div class="hmm-chart-title">{label}/USD — Hourly Chart with Regime Overlay</div>
     <div class="hmm-chart-badges">
+      <span class="hmm-badge hmm-badge-buy">▲ BUY</span>
+      <span class="hmm-badge hmm-badge-sell">▼ SELL</span>
       <span class="hmm-badge hmm-badge-ema20">EMA 20</span>
       <span class="hmm-badge hmm-badge-ema200">EMA 200</span>
       <span class="hmm-badge hmm-badge-vol">Volume</span>
