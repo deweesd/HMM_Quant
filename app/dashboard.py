@@ -370,11 +370,24 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
             ), row=1, col=1)
 
     # ── SELL markers ──────────────────────────────────────────────────────────
+    # Track "in a long run" with a forward pass so σ-gated NEUTRAL bars between
+    # a BUY and a Bear flip don't break the exit detection (C4 fix).
     if "Regime" in df_plot.columns and "Signal" in df_plot.columns:
+        _in_long = False
+        _in_long_list = []
+        _vol_gated = df_plot.get("Vol_Gated", pd.Series(False, index=df_plot.index))
+        for _sig, _reg in zip(df_plot["Signal"], df_plot["Regime"]):
+            if _sig == "LONG":
+                _in_long = True
+            elif _reg == "Bear":
+                _in_long = False
+            _in_long_list.append(_in_long)
+        _in_long_s = pd.Series(_in_long_list, index=df_plot.index)
+
         sell_mask = (
             (df_plot["Regime"] == "Bear") &
             (df_plot["Regime"].shift(1) != "Bear") &
-            (df_plot["Signal"].shift(1) == "LONG")
+            _in_long_s.shift(1).fillna(False)
         )
         df_sell = df_plot[sell_mask]
         if not df_sell.empty:
@@ -412,9 +425,9 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
         showlegend   = False,
     ), row=2, col=1)
 
-    # ── 90-day default range ──────────────────────────────────────────────────
+    # ── 90-day default range (floor: first available bar) ────────────────────
     range_end   = df_plot.index[-1]
-    range_start = range_end - pd.Timedelta(days=90)
+    range_start = max(df_plot.index[0], range_end - pd.Timedelta(days=90))
 
     # ── Layout ────────────────────────────────────────────────────────────────
     label = TICKER_LABELS.get(ticker, ticker)
@@ -799,12 +812,14 @@ def compute_risk_metrics(df: pd.DataFrame) -> dict:
     t_stat = sharpe * np.sqrt(n)
     sig    = t_stat > 1.96
 
-    if sigma <= 4 and sharpe >= 1.5:
+    if sigma > 8:
+        rating, rating_cls = "High Vol Risk", "bear"
+    elif sharpe >= 1.5 and sigma <= 4:
         rating, rating_cls = "Low Risk", "bull"
-    elif sigma <= 8 and sharpe >= 0.5:
+    elif sharpe >= 0.5:
         rating, rating_cls = "Moderate", "neut"
     else:
-        rating, rating_cls = "High Risk", "bear"
+        rating, rating_cls = "Weak Signal", "neut"
 
     return dict(
         sigma=sigma, sharpe=sharpe, t_stat=t_stat,
@@ -813,13 +828,20 @@ def compute_risk_metrics(df: pd.DataFrame) -> dict:
 
 
 def compute_sr_ranking(all_data: dict) -> list:
-    """Return list of ticker dicts sorted by Sharpe descending."""
+    """Return list of ticker dicts sorted by Sharpe descending.
+
+    Guards against cached DataFrames that pre-date the Vol_Gated column.
+    """
     rows = []
     for t, res in all_data.items():
-        d      = res["df"]
+        d = res["df"]
+        # C3: Vol_Gated may be absent in cached data from before this deploy
+        if "Vol_Gated" not in d.columns:
+            from strategy.signals import score_signals  # re-score in-place
+            d = score_signals(d)
         rm     = compute_risk_metrics(d)
         signal = str(d["Signal"].iloc[-1])
-        gated  = bool(d["Vol_Gated"].iloc[-1]) if "Vol_Gated" in d.columns else False
+        gated  = bool(d["Vol_Gated"].iloc[-1])
         rows.append(dict(
             ticker=t, label=TICKER_LABELS[t],
             sharpe=rm["sharpe"], sigma=rm["sigma"],
@@ -890,18 +912,18 @@ def render_risk_panel(df: pd.DataFrame, all_data: dict, ticker: str) -> None:
   </div>
   <div class="hmm-risk-metrics">
     <div class="hmm-risk-metric">
-      <div class="hmm-risk-metric-lbl">σ Volatility (24h)</div>
+      <div class="hmm-risk-metric-lbl">σ Realized Vol (24h)</div>
       <div class="hmm-risk-metric-val {sigma_cls}">{rm["sigma"]:.1f}%</div>
       <div class="hmm-risk-metric-sub">
-        Gate threshold: 8%<br>
+        Rolling 24-bar std · gate: 8%<br>
         {'<span class="sig">✓ Below gate — signal active</span>' if rm["sigma"] <= 8 else '<span class="gate">✗ Above gate — signal suppressed</span>'}
       </div>
     </div>
     <div class="hmm-risk-metric">
-      <div class="hmm-risk-metric-lbl">Sharpe Ratio</div>
+      <div class="hmm-risk-metric-lbl">Asset Sharpe</div>
       <div class="hmm-risk-metric-val {sharpe_cls}">{rm["sharpe"]:.2f}</div>
       <div class="hmm-risk-metric-sub">
-        (Avg hourly return / σ) × √8760<br>
+        Asset returns · all bars<br>
         {'<span class="sig">Strong risk-adjusted return</span>' if rm["sharpe"] >= 1.5 else ('<span class="warn">Moderate return</span>' if rm["sharpe"] >= 0.5 else '<span class="gate">Weak return</span>')}
       </div>
     </div>
