@@ -94,12 +94,13 @@ section[data-testid="stMain"] {
   border-radius: var(--radius-sm) !important;
 }
 
-/* Tabs: pill style */
+/* Tabs: pill style — centered so sidebar chevron never overlaps */
 [data-testid="stTabs"] [data-baseweb="tab-list"] {
   background: transparent !important;
   gap: 4px !important;
   border-bottom: 1px solid var(--border) !important;
   padding-bottom: 0 !important;
+  justify-content: center !important;
 }
 [data-testid="stTabs"] [data-baseweb="tab"] {
   background: transparent !important;

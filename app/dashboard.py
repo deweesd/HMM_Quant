@@ -60,14 +60,8 @@ if st.session_state.light_mode:
 # ══════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    # ── Branding + controls row ────────────────────────────────────────────────
-    _sb_logo, _sb_gh, _sb_theme = st.columns([5, 1, 1])
-    with _sb_logo:
-        st.markdown(
-            '<div style="font-size:15px;font-weight:700;color:var(--t1);padding-top:4px;">'
-            'HMM <span style="color:var(--accent-lt);">Quant</span></div>',
-            unsafe_allow_html=True,
-        )
+    # ── Controls row (GitHub + theme toggle) ───────────────────────────────────
+    _sb_gh, _sb_theme = st.columns([1, 1])
     with _sb_gh:
         st.markdown(
             '<a href="https://github.com/deweesd" target="_blank" '
@@ -972,6 +966,15 @@ def _section_label(text: str) -> None:
         unsafe_allow_html=True,
     )
 
+
+# ── App title — centered, always visible ──────────────────────────────────────
+st.markdown("""
+<div style="text-align:center;padding:10px 0 4px;">
+  <span style="font-size:22px;font-weight:700;letter-spacing:-0.3px;color:var(--t1);">
+    HMM <span style="color:var(--accent-lt);">Quant</span>
+  </span>
+</div>
+""", unsafe_allow_html=True)
 
 # ── Load all tickers before tabs render so the spinner doesn't bleed into tab content ──
 with st.spinner("Loading market data…"):
