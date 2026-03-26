@@ -56,9 +56,6 @@ body.hmm-light {
 
 /* ── Streamlit internals ─────────────────────────────────────────── */
 
-/* Hide native header; custom topbar is rendered via st.markdown */
-[data-testid="stHeader"] { display: none !important; }
-
 /* Main content area */
 .block-container {
   padding: 1rem 1.5rem 2rem !important;
@@ -144,80 +141,6 @@ section[data-testid="stMain"] {
 
 /* Remove dividers (they are deleted from code, but guard any that remain) */
 hr { display: none !important; }
-
-/* ── Topbar icon buttons (hamburger + theme toggle) ──────────────── */
-/* Scoped via #hmm-topbar-anchor — only matches the topbar row,
-   never leaks into tabs, sidebar, or other st.columns calls. */
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:first-child
-  [data-testid="baseButton-secondary"],
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:last-child
-  [data-testid="baseButton-secondary"] {
-  width: 36px !important;
-  height: 36px !important;
-  min-height: unset !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  background: var(--bg3) !important;
-  border: 1px solid var(--border2) !important;
-  color: var(--t1) !important;
-  font-size: 17px !important;
-  line-height: 1 !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: var(--transition) !important;
-  box-shadow: none !important;
-}
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:first-child
-  [data-testid="baseButton-secondary"]:hover,
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:last-child
-  [data-testid="baseButton-secondary"]:hover {
-  background: var(--accent-glow) !important;
-  border-color: var(--accent) !important;
-}
-/* Hamburger column: left-aligned */
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:first-child {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  padding-top: 4px !important;
-}
-/* GitHub + theme-toggle columns: right-aligned */
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:last-child,
-#hmm-topbar-anchor ~ div [data-testid="stColumn"]:nth-last-child(2) {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  padding-top: 4px !important;
-}
-
-/* ── GitHub icon button ──────────────────────────────────────────── */
-.hmm-topbar-icon-col {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-  padding-top: 2px;
-}
-.hmm-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  color: var(--t2);
-  text-decoration: none;
-  transition: var(--transition);
-}
-.hmm-icon-btn:hover {
-  background: var(--accent-glow);
-  border-color: var(--accent);
-  color: var(--accent-lt);
-}
 
 /* ── Hero Signal Banner ──────────────────────────────────────────── */
 .hmm-hero {
@@ -532,15 +455,6 @@ section[data-testid="stMain"] { overflow-x: hidden; }
   .hmm-cards { grid-template-columns: 1fr !important; }
 }
 
-/* ── Sidebar collapsed control — always reachable ───────────────── */
-[data-testid="stSidebarCollapsedControl"] {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 999 !important;
-  top: 60px !important;
-}
-
 /* ── Chart marker badges ─────────────────────────────────────────── */
 .hmm-badge-buy  { background: rgba(0,201,106,0.12); color: var(--bull);
                   border: 1px solid rgba(0,201,106,0.3); }
@@ -665,6 +579,55 @@ section[data-testid="stMain"] { overflow-x: hidden; }
   .hmm-ranking-table td { font-size: 10px !important; padding: 5px 6px 5px 0 !important; }
   .hmm-risk-panel   { padding: 14px !important; }
 }
+
+/* ── About tab cards ─────────────────────────────────────────────── */
+.hmm-about-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.hmm-about-card h3 {
+  font-size: 14px; font-weight: 700;
+  color: var(--accent-lt);
+  margin: 0 0 12px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.hmm-about-card p, .hmm-about-card li {
+  font-size: 13px; color: var(--t2); line-height: 1.65;
+}
+.hmm-about-card ul { padding-left: 18px; margin: 0; }
+.hmm-about-card li { margin-bottom: 4px; }
+.hmm-stat-row {
+  display: flex; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.hmm-stat-row:last-child { border-bottom: none; }
+.hmm-stat-key { color: var(--t3); font-weight: 500; }
+.hmm-stat-val { color: var(--t1); font-weight: 600; }
+.hmm-disclaimer {
+  background: var(--bear-bg);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 12.5px; color: var(--bear);
+  margin-top: 10px;
+}
+
+/* ── Trade log card ──────────────────────────────────────────────── */
+.hmm-tradelog-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+.hmm-tradelog-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.hmm-tradelog-title { font-size: 13px; font-weight: 700; color: var(--t1); }
+.hmm-tradelog-meta  { font-size: 11px; color: var(--t3); }
 </style>
 
 <script>

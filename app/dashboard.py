@@ -54,61 +54,57 @@ if "light_mode" not in st.session_state:
 if st.session_state.light_mode:
     st.markdown(LIGHT_MODE_CSS, unsafe_allow_html=True)
 
-st.markdown('<div id="hmm-topbar-anchor"></div>', unsafe_allow_html=True)
-_topbar_logo, _topbar_gh, _topbar_btn = st.columns([13, 1, 1])
-with _topbar_logo:
-    st.markdown("""
-<div style="display:flex; align-items:center; padding:10px 0 14px;
-            border-bottom:1px solid var(--border); margin-bottom:8px;">
-  <div style="font-size:18px; font-weight:700; letter-spacing:-0.3px; color:var(--t1);">
-    HMM <span style="color:var(--accent-lt);">Quant</span>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-with _topbar_gh:
-    st.markdown("""
-<div class="hmm-topbar-icon-col">
-  <a href="https://github.com/deweesd" target="_blank" class="hmm-icon-btn" title="GitHub">
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57
-               0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41
-               -1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815
-               2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925
-               0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23
-               .96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65
-               .24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925
-               .435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57
-               A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-    </svg>
-  </a>
-</div>
-""", unsafe_allow_html=True)
-with _topbar_btn:
-    _btn_icon = "☀️" if st.session_state.light_mode else "🌙"
-    if st.button(_btn_icon, key="theme_btn", help="Toggle dark / light mode"):
-        st.session_state.light_mode = not st.session_state.light_mode
-        st.rerun()
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR
 # ══════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("""
-<div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;
-            border-bottom:1px solid var(--border2);margin-bottom:4px;">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-       stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-       style="color:var(--t2);flex-shrink:0;">
-    <line x1="3" y1="6"  x2="21" y2="6"/>
-    <line x1="3" y1="12" x2="21" y2="12"/>
-    <line x1="3" y1="18" x2="21" y2="18"/>
-  </svg>
-  <span style="font-size:13px;font-weight:700;letter-spacing:0.07em;
-               text-transform:uppercase;color:var(--t2);">Filters</span>
-</div>
-""", unsafe_allow_html=True)
+    # ── Branding + controls row ────────────────────────────────────────────────
+    _sb_logo, _sb_gh, _sb_theme = st.columns([5, 1, 1])
+    with _sb_logo:
+        st.markdown(
+            '<div style="font-size:15px;font-weight:700;color:var(--t1);padding-top:4px;">'
+            'HMM <span style="color:var(--accent-lt);">Quant</span></div>',
+            unsafe_allow_html=True,
+        )
+    with _sb_gh:
+        st.markdown(
+            '<a href="https://github.com/deweesd" target="_blank" '
+            'title="GitHub" style="display:flex;align-items:center;'
+            'justify-content:center;width:30px;height:30px;border-radius:50%;'
+            'background:var(--bg3);border:1px solid var(--border2);'
+            'color:var(--t2);text-decoration:none;margin-top:2px;">'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" '
+            'viewBox="0 0 24 24" fill="currentColor">'
+            '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385'
+            '.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555'
+            '-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225'
+            '-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805'
+            ' 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335'
+            '-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18'
+            ' 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405'
+            'c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23'
+            ' 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095'
+            '.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02'
+            ' 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a>',
+            unsafe_allow_html=True,
+        )
+    with _sb_theme:
+        _btn_icon = "☀️" if st.session_state.light_mode else "🌙"
+        if st.button(_btn_icon, key="theme_btn", help="Toggle dark / light mode"):
+            st.session_state.light_mode = not st.session_state.light_mode
+            st.rerun()
+
+    st.markdown(
+        '<div style="border-top:1px solid var(--border2);margin:10px 0 12px;"></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div style="font-size:11px;font-weight:700;letter-spacing:0.09em;'
+        'text-transform:uppercase;color:var(--t3);margin-bottom:10px;">Filters</div>',
+        unsafe_allow_html=True,
+    )
 
     selected_ticker = st.selectbox(
         "Focus Ticker",
