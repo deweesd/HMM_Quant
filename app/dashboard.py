@@ -95,7 +95,20 @@ with _topbar_btn:
 # ══════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.title("⚙️ Settings")
+    st.markdown("""
+<div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;
+            border-bottom:1px solid var(--border2);margin-bottom:4px;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+       style="color:var(--t2);flex-shrink:0;">
+    <line x1="3" y1="6"  x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+  <span style="font-size:13px;font-weight:700;letter-spacing:0.07em;
+               text-transform:uppercase;color:var(--t2);">Filters</span>
+</div>
+""", unsafe_allow_html=True)
 
     selected_ticker = st.selectbox(
         "Focus Ticker",
