@@ -992,20 +992,24 @@ tab_dashboard, tab_backtest, tab_about = st.tabs(
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_dashboard:
 
-    # ── Hero Banner ───────────────────────────────────────────────────────────
+    # ── Hero Banner (full width) ───────────────────────────────────────────────
     if selected_ticker in all_data:
         res    = all_data[selected_ticker]
         df_sel = res["df"]
         latest = df_sel.iloc[-1]
         render_hero_banner(df_sel, selected_ticker, latest)
-        render_risk_panel(df_sel, all_data, selected_ticker)
 
-    # ── Market Overview ───────────────────────────────────────────────────────
-    _section_label("Market Overview")
-    render_ticker_cards(all_data)
-    render_sentiment_strip(all_data)
+    # ── Two-column: Ticker Cards (left) | SR Ranking / Risk Panel (right) ─────
+    _col_cards, _col_risk = st.columns([3, 2])
+    with _col_cards:
+        _section_label("Market Overview")
+        render_ticker_cards(all_data)
+        render_sentiment_strip(all_data)
+    with _col_risk:
+        if selected_ticker in all_data:
+            render_risk_panel(df_sel, all_data, selected_ticker)
 
-    # ── Price Chart ───────────────────────────────────────────────────────────
+    # ── Price Chart (full width) ──────────────────────────────────────────────
     if selected_ticker in all_data:
         res    = all_data[selected_ticker]
         df_sel = res["df"]
@@ -1046,6 +1050,7 @@ with tab_dashboard:
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_backtest:
     label = TICKER_LABELS.get(selected_ticker, selected_ticker)
+    _section_label(f"Backtest — {label}/USD")
     try:
         if position_mode == "user_defined" and user_exit_ladder:
             try:
@@ -1142,6 +1147,7 @@ with tab_backtest:
 # TAB 3 — ABOUT
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_about:
+    _section_label("About HMM Quant")
     left_html = """
 <div class="hmm-about-card">
   <h3>What This App Does</h3>

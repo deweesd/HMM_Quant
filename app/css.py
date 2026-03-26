@@ -223,7 +223,7 @@ hr { display: none !important; }
 .hmm-stat-val.acc { color:var(--accent-lt); }
 
 /* ── Ticker Cards ────────────────────────────────────────────────── */
-.hmm-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:4px 0; }
+.hmm-cards { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:4px 0; }
 .hmm-card {
   background: var(--bg2);
   border: 1px solid var(--border);
