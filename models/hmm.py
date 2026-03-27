@@ -102,9 +102,9 @@ def fit_hmm(df: pd.DataFrame, n_states: int = N_STATES, random_state: int = RAND
     model = GaussianHMM(
         n_components    = n_states,
         covariance_type = "full",
-        n_iter          = 1000,
+        n_iter          = 100,
         random_state    = random_state,
-        tol             = 1e-4,
+        tol             = 1e-2,
         verbose         = False,
     )
     with warnings.catch_warnings():
