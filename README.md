@@ -2,20 +2,46 @@
 
 Regime-based crypto trading dashboard powered by Hidden Markov Models.
 
-Detects latent market regimes in hourly BTC, ETH, SOL, and ADA data using a 6-state GaussianHMM, then generates trade signals when 8 of 10 technical confirmation signals align with a Bull regime. Includes a Streamlit dashboard with live regime detection, signal display, and backtesting.
+Detects latent market regimes in hourly BTC, ETH, SOL, and ADA data using a 6-state GaussianHMM, then generates trade signals when 8 of 10 technical confirmation signals align with a Bull regime. Includes a live dashboard with regime detection, signal display, and backtesting.
 
-Main app can be found here: www.btgtraders.com
+**Live app: [btgtraders.com](https://btgtraders.com)**
+
 
 ---
 
-## Quick Start
+## Hosting & Infrastructure
+
+The app runs on **Railway** (railway.app) — a production-grade cloud platform — serving a containerized Streamlit application via Docker. This replaces the previous Streamlit Cloud deployment and eliminates cold starts, giving users an always-warm, instant-loading experience.
+
+| Layer | Technology |
+|---|---|
+| Frontend / UI | Streamlit (Python) |
+| Charting | Plotly |
+| Containerization | Docker (python:3.11-slim) |
+| Hosting | Railway (Hobby plan, us-west2) |
+| Domain | btgtraders.com via Namecheap |
+| SSL | Auto-provisioned via Railway (Let's Encrypt) |
+| Market Data | yfinance (Yahoo Finance) |
+| Regime Model | hmmlearn GaussianHMM |
+
+---
+
+## Quick Start (Local Development)
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the dashboard
+# Run the dashboard locally
 streamlit run app/dashboard.py
+```
+
+The app is also fully containerized for local Docker use:
+
+```bash
+docker build -t hmm-quant .
+docker run -p 8501:8501 hmm-quant
+# Visit http://localhost:8501
 ```
 
 ---
@@ -24,10 +50,10 @@ streamlit run app/dashboard.py
 
 ```
 HMM_Quant/
+├── app/           # Streamlit dashboard and CSS design system
 ├── pipeline/      # Data download and feature engineering
 ├── models/        # GaussianHMM regime detection
 ├── strategy/      # Signal scoring and backtesting
-├── app/           # Streamlit dashboard
 ├── notebooks/     # Standalone Jupyter/Colab analysis scripts
 ├── docs/          # Architecture and strategy documentation
 └── assets/        # Images and design references
@@ -63,6 +89,17 @@ See [docs/STRATEGY.md](docs/STRATEGY.md) for the full signal table and backtest 
 ## Dependencies
 
 See `requirements.txt`. Key libraries: `streamlit`, `hmmlearn`, `yfinance`, `scikit-learn`, `plotly`, `pandas`, `numpy`.
+
+---
+
+## Deployment
+
+The app auto-deploys to Railway on every push to `main`. No manual steps required.
+
+Key deployment files:
+- `Dockerfile` — container definition, Python 3.11, port 8501
+- `railway.toml` — forces Dockerfile builder
+- `.streamlit/config.toml` — headless server config
 
 ---
 
