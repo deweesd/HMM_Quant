@@ -16,7 +16,4 @@ COPY . .
 
 EXPOSE $PORT
 
-CMD streamlit run app/dashboard.py \
-    --server.port=$PORT \
-    --server.address=0.0.0.0 \
-    --server.headless=true
+CMD ["sh", "-c", "streamlit run app/dashboard.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true"]
