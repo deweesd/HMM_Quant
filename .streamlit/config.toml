@@ -4,3 +4,4 @@ base = "dark"
 [server]
 headless = true
 enableCORS = false
+enableXsrfProtection = false
