@@ -172,17 +172,19 @@ def fetch_circ_supply(ticker: str) -> str:
     Falls back to fast_info.market_cap, then price × shares_outstanding.
     """
     try:
-        info = yf.Ticker(ticker).info
+        t = yf.Ticker(ticker)
+        fast = t.fast_info
+        mcap = getattr(fast, "market_cap", None)
 
-        # Primary: marketCap field from full info dict
-        mcap = info.get("marketCap") or info.get("market_cap")
-
-        # Fallback: compute from current price × circulating supply
+        # Fallback: full .info if fast_info has no market cap
         if not mcap:
-            price  = info.get("regularMarketPrice") or info.get("currentPrice")
-            supply = info.get("circulatingSupply")
-            if price and supply:
-                mcap = price * supply
+            info = t.info
+            mcap = info.get("marketCap") or info.get("market_cap")
+            if not mcap:
+                price  = info.get("regularMarketPrice") or info.get("currentPrice")
+                supply = info.get("circulatingSupply")
+                if price and supply:
+                    mcap = price * supply
 
         if not mcap or mcap == 0:
             return "N/A"
