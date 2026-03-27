@@ -56,9 +56,9 @@ body.hmm-light {
 
 /* ── Streamlit internals ─────────────────────────────────────────── */
 
-/* Main content area */
+/* Main content area — top padding clears Streamlit Cloud's ~50px fixed toolbar */
 .block-container {
-  padding: 1rem 1.5rem 2rem !important;
+  padding: 3.5rem 1.5rem 2rem !important;
   max-width: 100% !important;
 }
 section[data-testid="stMain"] {

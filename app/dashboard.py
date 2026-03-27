@@ -401,11 +401,6 @@ def build_candlestick(df_plot: pd.DataFrame, ticker: str) -> go.Figure:
     # ── Layout ────────────────────────────────────────────────────────────────
     label = TICKER_LABELS.get(ticker, ticker)
     fig.update_layout(
-        title = dict(
-            text  = f"{label}/USD — Hourly Chart with Regime Overlay",
-            font  = dict(size=14, color="#e0e0e0"),
-            x     = 0.01,
-        ),
         xaxis_rangeslider_visible   = True,
         xaxis_rangeslider_thickness = 0.04,
         height        = 580,
@@ -615,7 +610,7 @@ def render_ticker_cards(all_data: dict) -> None:
   <div style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div>
       <div class="hmm-card-name">{label}</div>
-      <div class="hmm-card-tick">{ticker}/USD</div>
+      <div class="hmm-card-tick">{label}/USD</div>
     </div>
     <div class="hmm-regime-pill {reg_cls}">{reg_icon} {regime}</div>
   </div>
