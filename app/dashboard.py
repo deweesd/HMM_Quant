@@ -955,15 +955,15 @@ _backtest_cls = "btg-nav-link btg-nav-active" if _active_tab == "backtest" else 
 _about_cls    = "btg-nav-link btg-nav-active" if _active_tab == "about"    else "btg-nav-link"
 st.markdown(f"""
 <nav class="btg-navbar">
-  <a class="btg-brand" href="?tab=live">
+  <span class="btg-brand" onclick="window.location.href='?tab=live'" style="cursor:pointer">
     <div class="btg-brand-mark">B</div>
     <span class="btg-brand-name">BTG <span class="btg-brand-red">Traders</span></span>
-  </a>
+  </span>
   <div class="btg-nav-links">
-    <a class="{_live_cls}"     href="?tab=live">Live</a>
-    <a class="{_backtest_cls}" href="?tab=backtest">Backtest</a>
-    <a class="{_about_cls}"    href="?tab=about">About</a>
-    <a class="btg-nav-link btg-nav-disabled">Account</a>
+    <span class="{_live_cls}"     onclick="window.location.href='?tab=live'"     style="cursor:pointer">Live</span>
+    <span class="{_backtest_cls}" onclick="window.location.href='?tab=backtest'" style="cursor:pointer">Backtest</span>
+    <span class="{_about_cls}"    onclick="window.location.href='?tab=about'"    style="cursor:pointer">About</span>
+    <span class="btg-nav-link btg-nav-disabled">Account</span>
   </div>
   <div class="btg-nav-actions">
     <button class="btg-icon-btn" id="hmmThemeBtn"
