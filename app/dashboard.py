@@ -56,6 +56,9 @@ if "light_mode" not in st.session_state:
 if st.session_state.light_mode:
     st.markdown(LIGHT_MODE_CSS, unsafe_allow_html=True)
 
+# ── Active tab (driven by ?tab= query param) ───────────────────────────────────
+_active_tab = st.query_params.get("tab", "live")
+
 # ── Background scheduler — process-level singleton ─────────────────────────────
 @st.cache_resource
 def _start_scheduler():
@@ -947,19 +950,19 @@ def _section_label(text: str) -> None:
 
 # ── BTG Traders navbar ────────────────────────────────────────────────────────
 _btn_icon = "☀️" if st.session_state.light_mode else "🌙"
+_live_cls     = "btg-nav-link btg-nav-active" if _active_tab == "live"     else "btg-nav-link"
+_backtest_cls = "btg-nav-link btg-nav-active" if _active_tab == "backtest" else "btg-nav-link"
+_about_cls    = "btg-nav-link btg-nav-active" if _active_tab == "about"    else "btg-nav-link"
 st.markdown(f"""
 <nav class="btg-navbar">
-  <a class="btg-brand" href="#">
+  <a class="btg-brand" href="?tab=live">
     <div class="btg-brand-mark">B</div>
     <span class="btg-brand-name">BTG <span class="btg-brand-red">Traders</span></span>
   </a>
   <div class="btg-nav-links">
-    <a class="btg-nav-link btg-nav-active" id="btg-link-live"
-       onclick="btgNavClick('live',this)">Live</a>
-    <a class="btg-nav-link" id="btg-link-backtest"
-       onclick="btgNavClick('backtest',this)">Backtest</a>
-    <a class="btg-nav-link" id="btg-link-about"
-       onclick="btgNavClick('about',this)">About</a>
+    <a class="{_live_cls}"     href="?tab=live">Live</a>
+    <a class="{_backtest_cls}" href="?tab=backtest">Backtest</a>
+    <a class="{_about_cls}"    href="?tab=about">About</a>
     <a class="btg-nav-link btg-nav-disabled">Account</a>
   </div>
   <div class="btg-nav-actions">
@@ -986,18 +989,6 @@ st.markdown(f"""
     <button class="btg-btn-primary">Sign Up</button>
   </div>
 </nav>
-<script>
-function btgNavClick(label, el) {{
-  var tabs = document.querySelectorAll('button[data-baseweb="tab"]');
-  tabs.forEach(function(tab) {{
-    if (tab.innerText.toLowerCase().includes(label.toLowerCase())) tab.click();
-  }});
-  document.querySelectorAll('.btg-nav-link').forEach(function(l) {{
-    l.classList.remove('btg-nav-active');
-  }});
-  el.classList.add('btg-nav-active');
-}}
-</script>
 """, unsafe_allow_html=True)
 
 # ── Alpha Build Banner ─────────────────────────────────────────────────────────
@@ -1036,15 +1027,10 @@ for _t in TICKERS:
     except Exception as e:
         st.warning(f"Could not load {_t}: {e}")
 
-tab_dashboard, tab_backtest, tab_about = st.tabs(
-    ["Live", "Backtest", "About"]
-)
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 1 — DASHBOARD
 # ─────────────────────────────────────────────────────────────────────────────
-with tab_dashboard:
+if _active_tab == "live":
 
     # ── Hero Banner (full width) ───────────────────────────────────────────────
     if selected_ticker in all_data:
@@ -1102,7 +1088,7 @@ with tab_dashboard:
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 2 — BACKTEST DETAILS
 # ─────────────────────────────────────────────────────────────────────────────
-with tab_backtest:
+elif _active_tab == "backtest":
     label = TICKER_LABELS.get(selected_ticker, selected_ticker)
     _section_label(f"Backtest — {label}/USD")
     try:
@@ -1200,7 +1186,7 @@ with tab_backtest:
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 3 — ABOUT
 # ─────────────────────────────────────────────────────────────────────────────
-with tab_about:
+elif _active_tab == "about":
     _section_label("About HMM Quant")
     left_html = """
 <div class="hmm-about-card">
