@@ -966,18 +966,33 @@ with _hdr_right:
         )
     with _rh_theme:
         _btn_icon = "☀️" if st.session_state.light_mode else "🌙"
-        if st.button(_btn_icon, key="theme_btn", help="Toggle dark / light mode"):
-            st.session_state.light_mode = not st.session_state.light_mode
-            st.rerun()
+        st.markdown(
+            f'<div style="display:flex;justify-content:flex-end;padding-top:6px;">'
+            f'<button id="hmmThemeBtn" onclick="toggleHmmTheme()" title="Toggle dark / light mode" '
+            f'style="background:var(--bg3);border:1px solid var(--border2);border-radius:50%;'
+            f'width:32px;height:32px;cursor:pointer;font-size:16px;line-height:1;'
+            f'display:flex;align-items:center;justify-content:center;">'
+            f'{_btn_icon}</button></div>',
+            unsafe_allow_html=True,
+        )
 
-# ── Load all tickers before tabs render so the spinner doesn't bleed into tab content ──
-with st.spinner("Loading market data…"):
-    all_data = {}
-    for ticker in TICKERS:
-        try:
-            all_data[ticker] = load_ticker(ticker, period, n_states)
-        except Exception as e:
-            st.warning(f"Could not load {ticker}: {e}")
+# ── Load focused ticker first, then remaining tickers ──────────────────────────
+# Loads the selected ticker immediately so the Live tab renders fast.
+# Background tickers load after, hitting cache on repeat visits.
+all_data = {}
+with st.spinner(f"Loading {ticker_focus}…"):
+    try:
+        all_data[ticker_focus] = load_ticker(ticker_focus, period, n_states)
+    except Exception as e:
+        st.warning(f"Could not load {ticker_focus}: {e}")
+
+for _t in TICKERS:
+    if _t == ticker_focus:
+        continue
+    try:
+        all_data[_t] = load_ticker(_t, period, n_states)
+    except Exception as e:
+        st.warning(f"Could not load {_t}: {e}")
 
 tab_dashboard, tab_backtest, tab_about = st.tabs(
     ["Live", "Backtest", "About"]
