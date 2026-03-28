@@ -9,12 +9,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def patch_cache_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("CACHE_DIR", str(tmp_path))
-    # Force reimport so CACHE_DIR env var is picked up
-    import importlib
-    import pipeline.cache
-    importlib.reload(pipeline.cache)
     yield
-    importlib.reload(pipeline.cache)
 
 
 def test_read_cache_returns_none_when_missing():

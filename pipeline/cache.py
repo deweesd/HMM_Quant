@@ -20,7 +20,6 @@ import pickle
 from datetime import datetime, timezone
 from typing import Optional
 
-CACHE_DIR = os.environ.get("CACHE_DIR", "/data/cache")
 TTL_MINUTES = 70
 _MANIFEST_FILENAME = "manifest.json"
 
@@ -28,15 +27,15 @@ logger = logging.getLogger(__name__)
 
 
 def _ensure_dir() -> None:
-    os.makedirs(CACHE_DIR, exist_ok=True)
+    os.makedirs(os.environ.get("CACHE_DIR", "/data/cache"), exist_ok=True)
 
 
 def _cache_path(ticker: str, period: str, n_states: int) -> str:
-    return os.path.join(CACHE_DIR, f"{ticker}_{period}_{n_states}.pkl")
+    return os.path.join(os.environ.get("CACHE_DIR", "/data/cache"), f"{ticker}_{period}_{n_states}.pkl")
 
 
 def _manifest_path() -> str:
-    return os.path.join(CACHE_DIR, _MANIFEST_FILENAME)
+    return os.path.join(os.environ.get("CACHE_DIR", "/data/cache"), _MANIFEST_FILENAME)
 
 
 def write_cache(ticker: str, period: str, n_states: int, data: dict) -> None:
@@ -57,8 +56,12 @@ def read_cache(ticker: str, period: str, n_states: int) -> Optional[dict]:
     age_minutes = (datetime.now(timezone.utc).timestamp() - os.path.getmtime(path)) / 60
     if age_minutes > TTL_MINUTES:
         return None
-    with open(path, "rb") as f:
-        return pickle.load(f)
+    try:
+        with open(path, "rb") as f:
+            return pickle.load(f)
+    except Exception:
+        logger.warning("Cache file corrupt or unreadable: %s", path)
+        return None
 
 
 def get_last_refreshed(ticker: str) -> Optional[str]:
@@ -72,11 +75,18 @@ def get_last_refreshed(ticker: str) -> Optional[str]:
 
 
 def _update_manifest(ticker: str) -> None:
+    import tempfile
     mpath = _manifest_path()
     manifest: dict = {}
     if os.path.exists(mpath):
-        with open(mpath) as f:
-            manifest = json.load(f)
+        try:
+            with open(mpath) as f:
+                manifest = json.load(f)
+        except Exception:
+            manifest = {}
     manifest[ticker] = datetime.now(timezone.utc).strftime("%H:%M UTC")
-    with open(mpath, "w") as f:
-        json.dump(manifest, f)
+    dir_ = os.path.dirname(mpath)
+    with tempfile.NamedTemporaryFile("w", dir=dir_, delete=False, suffix=".tmp") as tmp:
+        json.dump(manifest, tmp)
+        tmp_path = tmp.name
+    os.replace(tmp_path, mpath)
