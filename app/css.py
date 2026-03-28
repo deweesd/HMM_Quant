@@ -79,11 +79,15 @@ section[data-testid="stMain"] {
 .stVerticalBlock { gap: 0.6rem !important; }
 .element-container { margin-bottom: 0 !important; }
 
-/* Sidebar */
+/* Sidebar — always visible regardless of collapse state / localStorage */
 [data-testid="stSidebar"] {
+  display: flex !important;
   background: var(--bg1) !important;
   border-right: 1px solid var(--border) !important;
 }
+/* Hide the collapse arrow since we always keep sidebar open */
+button[data-testid="stSidebarNavCollapseButton"],
+[data-testid="stSidebarCollapsedControl"] { display: none !important; }
 [data-testid="stSidebarContent"] { padding: 1.25rem 1rem !important; }
 
 /* Sidebar widget labels */
