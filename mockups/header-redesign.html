@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTG Traders — Header Redesign Mockups</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; color: #eeeef5; }
+
+  /* ── Shared nav styles ───────────────────────────── */
+  .mockup-label {
+    text-align: center;
+    padding: 32px 0 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #555;
+  }
+  .mockup-desc {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    padding-bottom: 20px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #1a1a2e;
+    margin: 40px 0;
+  }
+
+  /* ══════════════════════════════════════════════════
+     OPTION A — Coinbase-style
+  ══════════════════════════════════════════════════ */
+  .nav-a {
+    background: #0c0c14;
+    border-bottom: 1px solid rgba(207,20,43,0.25);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 0;
+    position: relative;
+  }
+
+  /* Brand */
+  .nav-a .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .nav-a .brand-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #CF142B 0%, #0032A0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 900;
+    color: #FCDD09;
+    letter-spacing: -1px;
+  }
+  .nav-a .brand-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #eeeef5;
+    letter-spacing: -0.3px;
+  }
+  .nav-a .brand-name span {
+    color: #CF142B;
+  }
+
+  /* Center nav links */
+  .nav-a .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .nav-a .nav-link {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9090aa;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    text-decoration: none;
+  }
+  .nav-a .nav-link:hover { color: #eeeef5; background: rgba(255,255,255,0.05); }
+  .nav-a .nav-link.active {
+    color: #eeeef5;
+    background: rgba(207,20,43,0.12);
+    border: 1px solid rgba(207,20,43,0.25);
+  }
+
+  /* Right actions */
+  .nav-a .nav-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-a .btn-ghost {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9090aa;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: none;
+    cursor: pointer;
+  }
+  .nav-a .btn-primary {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #CF142B;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-a .btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #9090aa;
+  }
+
+  /* Tab bar below nav */
+  .tab-bar-a {
+    background: #0c0c14;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 28px;
+    gap: 4px;
+  }
+  .tab-bar-a .tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9090aa;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab-bar-a .tab:hover { color: #eeeef5; }
+  .tab-bar-a .tab.active {
+    color: #CF142B;
+    border-bottom-color: #CF142B;
+    font-weight: 600;
+  }
+
+  /* Page preview */
+  .page-preview-a {
+    background: #07070d;
+    padding: 32px 28px;
+    min-height: 200px;
+  }
+  .signal-banner {
+    background: linear-gradient(135deg, rgba(207,20,43,0.08) 0%, rgba(0,50,160,0.08) 100%);
+    border: 1px solid rgba(207,20,43,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .signal-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #9090aa; text-transform: uppercase; }
+  .signal-value { font-size: 28px; font-weight: 800; color: #CF142B; letter-spacing: -0.5px; margin-top: 4px; }
+  .signal-meta { font-size: 12px; color: #555; margin-top: 4px; }
+  .signal-badge {
+    padding: 8px 20px;
+    border-radius: 100px;
+    background: rgba(207,20,43,0.15);
+    border: 1px solid rgba(207,20,43,0.3);
+    color: #CF142B;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+
+  /* ══════════════════════════════════════════════════
+     OPTION B — Robinhood-style (minimal, pill tabs)
+  ══════════════════════════════════════════════════ */
+  .nav-b {
+    background: #0a0a0f;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+  }
+  .nav-b .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  .nav-b .brand-logo {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-b .brand-logo svg { width: 26px; height: 26px; }
+  .nav-b .brand-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: #eeeef5;
+    letter-spacing: -0.5px;
+  }
+  .nav-b .brand-sub {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: #FCDD09;
+    text-transform: uppercase;
+    margin-left: 2px;
+    align-self: flex-end;
+    padding-bottom: 2px;
+  }
+  .nav-b .spacer { flex: 1; }
+  .nav-b .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-b .btn-ghost {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9090aa;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: none;
+    cursor: pointer;
+  }
+  .nav-b .btn-primary {
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0a0a0f;
+    background: #FCDD09;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-b .btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #9090aa;
+  }
+
+  /* Pill tab bar */
+  .tab-bar-b {
+    background: #0a0a0f;
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .tab-bar-b .tab {
+    padding: 7px 18px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #9090aa;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab-bar-b .tab:hover {
+    color: #eeeef5;
+    background: rgba(255,255,255,0.05);
+  }
+  .tab-bar-b .tab.active {
+    color: #0a0a0f;
+    background: #FCDD09;
+    border-color: #FCDD09;
+    font-weight: 700;
+  }
+
+  /* Page preview B */
+  .page-preview-b {
+    background: #0a0a0f;
+    padding: 28px 32px;
+    min-height: 200px;
+  }
+  .signal-banner-b {
+    background: rgba(252,221,9,0.04);
+    border: 1px solid rgba(252,221,9,0.15);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .signal-value-b { font-size: 28px; font-weight: 800; color: #FCDD09; letter-spacing: -0.5px; margin-top: 4px; }
+  .signal-badge-b {
+    padding: 8px 20px;
+    border-radius: 100px;
+    background: rgba(252,221,9,0.12);
+    border: 1px solid rgba(252,221,9,0.25);
+    color: #FCDD09;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* ── Comparison label ───────────────────────────── */
+  .recommend-badge {
+    display: inline-block;
+    background: rgba(207,20,43,0.15);
+    border: 1px solid rgba(207,20,43,0.3);
+    color: #CF142B;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ OPTION A ══════════════════════════════════════════════════════════ -->
+<p class="mockup-label">Option A — Coinbase-style <span class="recommend-badge">★ Recommended</span></p>
+<p class="mockup-desc">Logo left · Nav centered · Sign In / Sign Up right · Underline tab bar below</p>
+
+<nav class="nav-a">
+  <a class="brand" href="#">
+    <div class="brand-mark">B</div>
+    <span class="brand-name">BTG <span>Traders</span></span>
+  </a>
+
+  <div class="nav-links">
+    <a class="nav-link active" href="#">Live</a>
+    <a class="nav-link" href="#">Backtest</a>
+    <a class="nav-link" href="#">About</a>
+    <a class="nav-link" href="#">Account</a>
+  </div>
+
+  <div class="nav-actions">
+    <button class="btn-icon" title="Toggle theme">🌙</button>
+    <button class="btn-ghost">Sign In</button>
+    <button class="btn-primary">Sign Up</button>
+  </div>
+</nav>
+
+<div class="tab-bar-a">
+  <div class="tab active">📊 Live</div>
+  <div class="tab">📋 Backtest</div>
+  <div class="tab">📖 About</div>
+</div>
+
+<div class="page-preview-a">
+  <div class="signal-banner">
+    <div>
+      <div class="signal-label">Current Signal · BTC-USD</div>
+      <div class="signal-value">LONG</div>
+      <div class="signal-meta">8/10 confirmations · Bull regime · Updated 1 min ago</div>
+    </div>
+    <div class="signal-badge">🟢 ENTER POSITION</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ══ OPTION B ══════════════════════════════════════════════════════════ -->
+<p class="mockup-label">Option B — Robinhood-style</p>
+<p class="mockup-desc">Logo left with gold sub-label · Pill-style tabs · Yellow accent · Minimal</p>
+
+<nav class="nav-b">
+  <a class="brand" href="#">
+    <div class="brand-logo">
+      <svg viewBox="0 0 26 26" fill="none">
+        <rect width="26" height="26" rx="6" fill="#CF142B"/>
+        <text x="13" y="19" text-anchor="middle" font-size="13" font-weight="900" fill="#FCDD09" font-family="sans-serif">B</text>
+      </svg>
+    </div>
+    <span class="brand-name">BTGTraders</span>
+    <span class="brand-sub">HMM Quant</span>
+  </a>
+
+  <div class="spacer"></div>
+
+  <div class="nav-actions">
+    <button class="btn-icon">🌙</button>
+    <button class="btn-ghost">Sign In</button>
+    <button class="btn-primary">Get Started</button>
+  </div>
+</nav>
+
+<div class="tab-bar-b">
+  <div class="tab active">Live</div>
+  <div class="tab">Backtest</div>
+  <div class="tab">About</div>
+  <div class="tab">Account</div>
+</div>
+
+<div class="page-preview-b">
+  <div class="signal-banner-b">
+    <div>
+      <div class="signal-label" style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#9090aa;text-transform:uppercase;">Current Signal · BTC-USD</div>
+      <div class="signal-value-b">LONG</div>
+      <div class="signal-meta" style="font-size:12px;color:#555;margin-top:4px;">8/10 confirmations · Bull regime · Updated 1 min ago</div>
+    </div>
+    <div class="signal-badge-b">🟢 ENTER POSITION</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ── Color palette reference ─────────────────────────────────────────── -->
+<div style="padding: 24px 32px 40px; display:flex; gap: 12px; justify-content:center;">
+  <div style="text-align:center;">
+    <div style="width:60px;height:60px;border-radius:10px;background:#CF142B;margin:0 auto 8px;"></div>
+    <div style="font-size:11px;color:#666;">#CF142B<br>Red</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="width:60px;height:60px;border-radius:10px;background:#FCDD09;margin:0 auto 8px;"></div>
+    <div style="font-size:11px;color:#666;">#FCDD09<br>Gold</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="width:60px;height:60px;border-radius:10px;background:#0032A0;margin:0 auto 8px;"></div>
+    <div style="font-size:11px;color:#666;">#0032A0<br>Blue</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="width:60px;height:60px;border-radius:10px;background:#0c0c14;border:1px solid #222;margin:0 auto 8px;"></div>
+    <div style="font-size:11px;color:#666;">#0c0c14<br>BG Dark</div>
+  </div>
+</div>
+
+</body>
+</html>
