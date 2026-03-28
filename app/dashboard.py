@@ -40,8 +40,8 @@ from app.css import DASHBOARD_CSS, LIGHT_MODE_CSS
 # ══════════════════════════════════════════════════════════════════════════════
 
 st.set_page_config(
-    page_title = "Regime Trading App",
-    page_icon  = "📈",
+    page_title = "BTG Traders",
+    page_icon  = None,
     layout     = "wide",
     initial_sidebar_state = "expanded",
 )
