@@ -59,3 +59,14 @@ def test_get_last_refreshed_returns_none_for_unknown_ticker():
     from pipeline.cache import write_cache, get_last_refreshed
     write_cache("BTC-USD", "730d", 6, {"x": 1})
     assert get_last_refreshed("ETH-USD") is None
+
+
+def test_read_cache_returns_none_on_corrupt_file(tmp_path, monkeypatch):
+    monkeypatch.setenv("CACHE_DIR", str(tmp_path))
+    from pipeline.cache import write_cache, read_cache
+    import glob
+    write_cache("BTC-USD", "730d", 6, {"x": 1})
+    pkl_files = glob.glob(str(tmp_path / "*.pkl"))
+    with open(pkl_files[0], "wb") as f:
+        f.write(b"not-a-pickle")
+    assert read_cache("BTC-USD", "730d", 6) is None

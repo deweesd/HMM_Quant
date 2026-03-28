@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import pickle
+import tempfile
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -75,7 +76,6 @@ def get_last_refreshed(ticker: str) -> Optional[str]:
 
 
 def _update_manifest(ticker: str) -> None:
-    import tempfile
     mpath = _manifest_path()
     manifest: dict = {}
     if os.path.exists(mpath):
