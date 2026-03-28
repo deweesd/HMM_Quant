@@ -653,11 +653,16 @@ section[data-testid="stMain"] { overflow-x: hidden; }
   position: relative;
   z-index: 100;
 }
+/* Reset browser default link styles inside navbar */
+.btg-navbar a, .btg-navbar a:visited, .btg-navbar a:hover {
+  text-decoration: none !important;
+  color: inherit !important;
+}
 .btg-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  text-decoration: none;
+  text-decoration: none !important;
   flex-shrink: 0;
 }
 .btg-brand-mark {
@@ -738,6 +743,54 @@ body.hmm-light .btg-nav-link:hover { color: #111; background: rgba(0,0,0,0.04); 
 body.hmm-light .btg-btn-ghost { color: #666; border-color: rgba(0,0,0,0.15); }
 body.hmm-light .btg-btn-ghost:hover { color: #111; }
 body.hmm-light .btg-icon-btn { color: #666; border-color: rgba(0,0,0,0.12); }
+
+/* ── Alpha Build Banner ──────────────────────────────────────────── */
+.btg-alpha-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0 -1.5rem 1.5rem -1.5rem;
+  padding: 12px 28px;
+  background: rgba(252,221,9,0.06);
+  border-bottom: 1px solid rgba(252,221,9,0.2);
+}
+.btg-alpha-badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: rgba(252,221,9,0.15);
+  border: 1px solid rgba(252,221,9,0.35);
+  color: #FCDD09;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.btg-alpha-text {
+  font-size: 12px;
+  color: #9090aa;
+  line-height: 1.5;
+  flex: 1;
+}
+.btg-alpha-text a {
+  color: #FCDD09 !important;
+  text-decoration: underline !important;
+}
+.btg-alpha-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #55556a;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  margin-top: -1px;
+}
+.btg-alpha-close:hover { color: #9090aa; }
+body.hmm-light .btg-alpha-banner { background: rgba(212,184,0,0.06); border-bottom-color: rgba(212,184,0,0.25); }
+body.hmm-light .btg-alpha-text { color: #555; }
 </style>
 
 <script>
