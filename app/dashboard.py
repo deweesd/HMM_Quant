@@ -34,6 +34,8 @@ from strategy.backtest import run_backtest
 from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER  # noqa: F401
 from strategy.explain import get_scenario, get_historical_replay
 from app.css import DASHBOARD_CSS, LIGHT_MODE_CSS
+from pipeline.cache     import read_cache, write_cache, get_last_refreshed
+from pipeline.scheduler import create_scheduler, DEFAULT_PERIOD, DEFAULT_N_STATES
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -53,6 +55,13 @@ if "light_mode" not in st.session_state:
     st.session_state.light_mode = False
 if st.session_state.light_mode:
     st.markdown(LIGHT_MODE_CSS, unsafe_allow_html=True)
+
+# ── Background scheduler — process-level singleton ─────────────────────────────
+@st.cache_resource
+def _start_scheduler():
+    return create_scheduler()
+
+_start_scheduler()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -133,10 +142,16 @@ with st.sidebar:
 # CACHED DATA LOADERS
 # ══════════════════════════════════════════════════════════════════════════════
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=4200, show_spinner=False)
 def load_ticker(ticker: str, period: str, n_states: int) -> dict:
-    """Load full pipeline for one ticker (cached 1 hour)."""
-    return get_ticker_data(ticker=ticker, period=period, n_states=n_states)
+    """Load full pipeline: disk cache first, live compute fallback."""
+    cached = read_cache(ticker, period, n_states)
+    if cached is not None:
+        return cached
+    with st.spinner(f"Loading {ticker} — first run, this takes ~30s…"):
+        data = get_ticker_data(ticker=ticker, period=period, n_states=n_states)
+        write_cache(ticker, period, n_states, data)
+        return data
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -1009,6 +1024,10 @@ with st.spinner(f"Loading {selected_ticker}…"):
         all_data[selected_ticker] = load_ticker(selected_ticker, period, n_states)
     except Exception as e:
         st.warning(f"Could not load {selected_ticker}: {e}")
+
+last_refreshed = get_last_refreshed(selected_ticker)
+if last_refreshed:
+    st.caption(f"Data as of {last_refreshed}")
 
 for _t in TICKERS:
     if _t == selected_ticker:
