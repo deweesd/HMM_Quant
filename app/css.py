@@ -60,9 +60,14 @@ body.hmm-light {
 
 /* ── Streamlit internals ─────────────────────────────────────────── */
 
-/* Main content area — top padding clears Streamlit Cloud's fixed toolbar (~52-64px) */
+/* Hide Streamlit's default header/toolbar — replaced by custom btg-navbar */
+header[data-testid="stHeader"] { display: none !important; }
+[data-testid="stToolbar"]      { display: none !important; }
+[data-testid="stDeployButton"] { display: none !important; }
+
+/* Main content area — reduced top padding since Streamlit header is hidden */
 .block-container {
-  padding: 5rem 1.5rem 2rem !important;
+  padding: 1rem 1.5rem 2rem !important;
   max-width: 100% !important;
 }
 section[data-testid="stMain"] {
@@ -565,6 +570,10 @@ section[data-testid="stMain"] { overflow-x: hidden; }
   font-size: 12px; color: var(--t2); vertical-align: middle;
 }
 .hmm-ranking-table tr:last-child td { border-bottom: none; }
+.hmm-tip {
+  font-size: 10px; color: var(--t3); cursor: help;
+  margin-left: 3px; vertical-align: middle;
+}
 .hmm-rank-num  { font-size: 11px; font-weight: 700; color: var(--t3); }
 .hmm-rank-asset{ font-weight: 600; color: var(--t1); }
 .hmm-rank-tick { font-size: 10px; color: var(--t3); }
@@ -646,7 +655,7 @@ section[data-testid="stMain"] { overflow-x: hidden; }
   display: flex;
   align-items: center;
   height: 60px;
-  margin: -3.5rem -1.5rem 1.5rem -1.5rem;
+  margin: -1rem -1.5rem 1.5rem -1.5rem;
   padding: 0 28px;
   background: #0c0c14;
   border-bottom: 1px solid rgba(207,20,43,0.3);

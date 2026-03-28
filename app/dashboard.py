@@ -923,7 +923,7 @@ def render_risk_panel(df: pd.DataFrame, all_data: dict, ticker: str) -> None:
     <table class="hmm-ranking-table">
       <thead>
         <tr>
-          <th>#</th><th>Asset</th><th>Sharpe</th><th>σ</th><th>Signal</th>
+          <th>#</th><th>Asset</th><th>Sharpe <span class="hmm-tip" title="Sharpe Ratio: annualized risk-adjusted return (mean ÷ std dev × √8760). ≥1.5 = strong · ≥0.5 = moderate · &lt;0.5 = weak">ⓘ</span></th><th>σ</th><th>Signal</th>
         </tr>
       </thead>
       <tbody>{''.join(rank_rows)}</tbody>
@@ -1085,7 +1085,7 @@ with tab_dashboard:
   </div>
 </div>
 """, unsafe_allow_html=True)
-        st.plotly_chart(chart, use_container_width=True, key="main_chart")
+        st.plotly_chart(chart, width="stretch", key="main_chart")
         render_conf_panel(latest)
 
     # ── Backtest Snapshot ─────────────────────────────────────────────────────
@@ -1165,7 +1165,7 @@ with tab_backtest:
   </div>
 </div>
 """, unsafe_allow_html=True)
-        st.plotly_chart(eq_fig, use_container_width=True, key="eq_chart")
+        st.plotly_chart(eq_fig, width="stretch", key="eq_chart")
 
         # Trade log
         n_trades  = len(trades_df)
@@ -1190,7 +1190,7 @@ with tab_backtest:
                     return ""
             st.dataframe(
                 trades_df.style.map(color_ret, subset=["Return %"]),
-                use_container_width=True,
+                width="stretch",
                 hide_index=False,
             )
     except Exception as e:
@@ -1399,6 +1399,6 @@ Circulating supply figures can vary across data providers.
         res = all_data[selected_ticker]
         st.dataframe(
             style_summary(res["state_summary"]),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
