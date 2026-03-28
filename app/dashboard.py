@@ -985,6 +985,21 @@ function btgNavClick(label, el) {{
 </script>
 """, unsafe_allow_html=True)
 
+# ── Alpha Build Banner ─────────────────────────────────────────────────────────
+st.markdown("""
+<div class="btg-alpha-banner" id="btgAlphaBanner">
+  <span class="btg-alpha-badge">ALPHA</span>
+  <span class="btg-alpha-text">
+    <strong>Work in progress.</strong> This build may contain bugs, incomplete features, or breaking changes.
+    Want to contribute or follow development?
+    <a href="https://github.com/deweesd/HMM_Quant" target="_blank"
+       style="color:#FCDD09;text-decoration:none;">Branch off&nbsp;main on GitHub →</a>
+  </span>
+  <button class="btg-alpha-close" onclick="document.getElementById('btgAlphaBanner').style.display='none'"
+          title="Dismiss">✕</button>
+</div>
+""", unsafe_allow_html=True)
+
 # ── Load focused ticker first, then remaining tickers ──────────────────────────
 # Loads the selected ticker immediately so the Live tab renders fast.
 # Background tickers load after, hitting cache on repeat visits.
