@@ -930,51 +930,60 @@ def _section_label(text: str) -> None:
     )
 
 
-# ── Page header: spacer | centered title | GitHub + theme ─────────────────────
-_hdr_left, _hdr_mid, _hdr_right = st.columns([1, 2, 1])
-with _hdr_mid:
-    st.markdown(
-        '<div style="text-align:center;padding:8px 0 4px;">'
-        '<span style="font-size:22px;font-weight:700;letter-spacing:-0.3px;color:var(--t1);">'
-        'HMM <span style="color:var(--accent-lt);">Quant</span>'
-        '</span></div>',
-        unsafe_allow_html=True,
-    )
-with _hdr_right:
-    _rh_gh, _rh_theme = st.columns([1, 1])
-    with _rh_gh:
-        st.markdown(
-            '<div style="display:flex;justify-content:flex-end;padding-top:6px;">'
-            '<a href="https://github.com/deweesd" target="_blank" title="GitHub" '
-            'style="display:flex;align-items:center;justify-content:center;'
-            'width:32px;height:32px;border-radius:50%;background:var(--bg3);'
-            'border:1px solid var(--border2);color:var(--t2);text-decoration:none;">'
-            '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" '
-            'viewBox="0 0 24 24" fill="currentColor">'
-            '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385'
-            '.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555'
-            '-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225'
-            '-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805'
-            ' 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335'
-            '-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18'
-            ' 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405'
-            'c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23'
-            ' 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095'
-            '.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02'
-            ' 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></a></div>',
-            unsafe_allow_html=True,
-        )
-    with _rh_theme:
-        _btn_icon = "☀️" if st.session_state.light_mode else "🌙"
-        st.markdown(
-            f'<div style="display:flex;justify-content:flex-end;padding-top:6px;">'
-            f'<button id="hmmThemeBtn" onclick="toggleHmmTheme()" title="Toggle dark / light mode" '
-            f'style="background:var(--bg3);border:1px solid var(--border2);border-radius:50%;'
-            f'width:32px;height:32px;cursor:pointer;font-size:16px;line-height:1;'
-            f'display:flex;align-items:center;justify-content:center;">'
-            f'{_btn_icon}</button></div>',
-            unsafe_allow_html=True,
-        )
+# ── BTG Traders navbar ────────────────────────────────────────────────────────
+_btn_icon = "☀️" if st.session_state.light_mode else "🌙"
+st.markdown(f"""
+<nav class="btg-navbar">
+  <a class="btg-brand" href="#">
+    <div class="btg-brand-mark">B</div>
+    <span class="btg-brand-name">BTG <span class="btg-brand-red">Traders</span></span>
+  </a>
+  <div class="btg-nav-links">
+    <a class="btg-nav-link btg-nav-active" id="btg-link-live"
+       onclick="btgNavClick('live',this)">Live</a>
+    <a class="btg-nav-link" id="btg-link-backtest"
+       onclick="btgNavClick('backtest',this)">Backtest</a>
+    <a class="btg-nav-link" id="btg-link-about"
+       onclick="btgNavClick('about',this)">About</a>
+    <a class="btg-nav-link btg-nav-disabled">Account</a>
+  </div>
+  <div class="btg-nav-actions">
+    <button class="btg-icon-btn" id="hmmThemeBtn"
+            onclick="toggleHmmTheme()" title="Toggle theme">{_btn_icon}</button>
+    <a href="https://github.com/deweesd" target="_blank"
+       class="btg-icon-btn" title="GitHub">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+           viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385
+        .6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555
+        -3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225
+        -1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805
+         1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335
+        -5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18
+         0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405
+        c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23
+         1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095
+        .81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02
+         12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+    </a>
+    <button class="btg-btn-ghost">Sign In</button>
+    <button class="btg-btn-primary">Sign Up</button>
+  </div>
+</nav>
+<script>
+function btgNavClick(label, el) {{
+  var tabs = document.querySelectorAll('button[data-baseweb="tab"]');
+  tabs.forEach(function(tab) {{
+    if (tab.innerText.toLowerCase().includes(label.toLowerCase())) tab.click();
+  }});
+  document.querySelectorAll('.btg-nav-link').forEach(function(l) {{
+    l.classList.remove('btg-nav-active');
+  }});
+  el.classList.add('btg-nav-active');
+}}
+</script>
+""", unsafe_allow_html=True)
 
 # ── Load focused ticker first, then remaining tickers ──────────────────────────
 # Loads the selected ticker immediately so the Live tab renders fast.

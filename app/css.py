@@ -18,9 +18,11 @@ body {
   --t1:          #eeeef5;
   --t2:          #9090aa;
   --t3:          #55556a;
-  --accent:      #6366f1;
-  --accent-lt:   #818cf8;
-  --accent-glow: rgba(99,102,241,0.22);
+  --accent:      #CF142B;
+  --accent-lt:   #e8374a;
+  --accent-glow: rgba(207,20,43,0.18);
+  --gold:        #FCDD09;
+  --blue-cat:    #0032A0;
   --bull:        #00c96a;
   --bull-bg:     rgba(0,201,106,0.08);
   --bear:        #ef4444;
@@ -35,18 +37,20 @@ body {
 
 /* ── Light mode overrides ────────────────────────────────────────── */
 body.hmm-light {
-  --bg0:         #f0f0f8;
-  --bg1:         #e8e8f4;
+  --bg0:         #f7f7f7;
+  --bg1:         #efefef;
   --bg2:         #ffffff;
-  --bg3:         #f4f4fc;
-  --border:      rgba(79,70,229,0.10);
-  --border2:     rgba(79,70,229,0.20);
-  --t1:          #111128;
-  --t2:          #4a4a68;
-  --t3:          #9090aa;
-  --accent:      #4f46e5;
-  --accent-lt:   #6366f1;
-  --accent-glow: rgba(79,70,229,0.14);
+  --bg3:         #f4f4f4;
+  --border:      rgba(207,20,43,0.10);
+  --border2:     rgba(207,20,43,0.20);
+  --t1:          #111111;
+  --t2:          #444444;
+  --t3:          #888888;
+  --accent:      #b01225;
+  --accent-lt:   #CF142B;
+  --accent-glow: rgba(207,20,43,0.12);
+  --gold:        #d4b800;
+  --blue-cat:    #0032A0;
   --bull:        #059669;
   --bull-bg:     rgba(5,150,105,0.08);
   --bear:        #dc2626;
@@ -94,27 +98,34 @@ section[data-testid="stMain"] {
   border-radius: var(--radius-sm) !important;
 }
 
-/* Tabs: pill style — centered so sidebar chevron never overlaps */
+/* Tabs: underline style matching BTG navbar */
 [data-testid="stTabs"] [data-baseweb="tab-list"] {
   background: transparent !important;
-  gap: 4px !important;
+  gap: 0 !important;
   border-bottom: 1px solid var(--border) !important;
   padding-bottom: 0 !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
 }
 [data-testid="stTabs"] [data-baseweb="tab"] {
   background: transparent !important;
-  border-radius: 20px 20px 0 0 !important;
+  border-radius: 0 !important;
   color: var(--t2) !important;
-  font-size: 13.5px !important;
+  font-size: 13px !important;
   font-weight: 500 !important;
-  padding: 8px 20px !important;
+  padding: 10px 20px !important;
+  border-bottom: 2px solid transparent !important;
+  margin-bottom: -1px !important;
   transition: var(--transition) !important;
 }
+[data-testid="stTabs"] [data-baseweb="tab"]:hover {
+  color: var(--t1) !important;
+  background: transparent !important;
+}
 [data-testid="stTabs"] [aria-selected="true"] {
-  background: var(--accent-glow) !important;
-  color: var(--accent-lt) !important;
+  background: transparent !important;
+  color: var(--accent) !important;
   font-weight: 600 !important;
+  border-bottom: 2px solid var(--accent) !important;
 }
 [data-testid="stTabs"] [data-baseweb="tab-highlight"] { display: none !important; }
 [data-testid="stTabs"] [data-baseweb="tab-border"]    { display: none !important; }
@@ -629,6 +640,104 @@ section[data-testid="stMain"] { overflow-x: hidden; }
 }
 .hmm-tradelog-title { font-size: 13px; font-weight: 700; color: var(--t1); }
 .hmm-tradelog-meta  { font-size: 11px; color: var(--t3); }
+
+/* ── BTG Traders Navbar ──────────────────────────────────────────── */
+.btg-navbar {
+  display: flex;
+  align-items: center;
+  height: 60px;
+  margin: -3.5rem -1.5rem 1.5rem -1.5rem;
+  padding: 0 28px;
+  background: #0c0c14;
+  border-bottom: 1px solid rgba(207,20,43,0.3);
+  position: relative;
+  z-index: 100;
+}
+.btg-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.btg-brand-mark {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #CF142B 0%, #0032A0 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900; color: #FCDD09;
+}
+.btg-brand-name {
+  font-size: 16px; font-weight: 700;
+  color: #eeeef5; letter-spacing: -0.3px;
+}
+.btg-brand-red { color: #CF142B; }
+.btg-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+}
+.btg-nav-link {
+  padding: 7px 15px;
+  border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  color: #9090aa;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: none;
+  text-decoration: none;
+  transition: all 0.15s;
+  user-select: none;
+}
+.btg-nav-link:hover { color: #eeeef5; background: rgba(255,255,255,0.05); }
+.btg-nav-active {
+  color: #eeeef5 !important;
+  background: rgba(207,20,43,0.12) !important;
+  border-color: rgba(207,20,43,0.25) !important;
+}
+.btg-nav-disabled { color: #444 !important; cursor: default !important; }
+.btg-nav-disabled:hover { background: none !important; }
+.btg-nav-actions {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 8px;
+}
+.btg-icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: #9090aa;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.btg-icon-btn:hover { border-color: rgba(255,255,255,0.2); color: #eeeef5; }
+.btg-btn-ghost {
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  color: #9090aa;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: none; cursor: pointer;
+  transition: all 0.15s;
+}
+.btg-btn-ghost:hover { color: #eeeef5; border-color: rgba(255,255,255,0.25); }
+.btg-btn-primary {
+  padding: 7px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  color: #fff; background: #CF142B;
+  border: none; cursor: pointer;
+  transition: all 0.15s;
+}
+.btg-btn-primary:hover { background: #b01225; }
+body.hmm-light .btg-navbar { background: #ffffff; border-bottom-color: rgba(207,20,43,0.2); }
+body.hmm-light .btg-brand-name { color: #111111; }
+body.hmm-light .btg-nav-link { color: #666; }
+body.hmm-light .btg-nav-link:hover { color: #111; background: rgba(0,0,0,0.04); }
+body.hmm-light .btg-btn-ghost { color: #666; border-color: rgba(0,0,0,0.15); }
+body.hmm-light .btg-btn-ghost:hover { color: #111; }
+body.hmm-light .btg-icon-btn { color: #666; border-color: rgba(0,0,0,0.12); }
 </style>
 
 <script>
