@@ -35,7 +35,7 @@ from strategy.exits   import build_exit_thresholds, RECOMMENDED_LADDER  # noqa: 
 from strategy.explain import get_scenario, get_historical_replay
 from app.css import DASHBOARD_CSS, LIGHT_MODE_CSS
 from pipeline.cache     import read_cache, write_cache, get_last_refreshed
-from pipeline.scheduler import create_scheduler, DEFAULT_PERIOD, DEFAULT_N_STATES
+from pipeline.scheduler import create_scheduler
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE CONFIG
@@ -1019,11 +1019,10 @@ st.markdown("""
 # Loads the selected ticker immediately so the Live tab renders fast.
 # Background tickers load after, hitting cache on repeat visits.
 all_data = {}
-with st.spinner(f"Loading {selected_ticker}…"):
-    try:
-        all_data[selected_ticker] = load_ticker(selected_ticker, period, n_states)
-    except Exception as e:
-        st.warning(f"Could not load {selected_ticker}: {e}")
+try:
+    all_data[selected_ticker] = load_ticker(selected_ticker, period, n_states)
+except Exception as e:
+    st.warning(f"Could not load {selected_ticker}: {e}")
 
 last_refreshed = get_last_refreshed(selected_ticker)
 if last_refreshed:
