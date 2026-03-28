@@ -980,14 +980,14 @@ with _hdr_right:
 # Loads the selected ticker immediately so the Live tab renders fast.
 # Background tickers load after, hitting cache on repeat visits.
 all_data = {}
-with st.spinner(f"Loading {ticker_focus}…"):
+with st.spinner(f"Loading {selected_ticker}…"):
     try:
-        all_data[ticker_focus] = load_ticker(ticker_focus, period, n_states)
+        all_data[selected_ticker] = load_ticker(selected_ticker, period, n_states)
     except Exception as e:
-        st.warning(f"Could not load {ticker_focus}: {e}")
+        st.warning(f"Could not load {selected_ticker}: {e}")
 
 for _t in TICKERS:
-    if _t == ticker_focus:
+    if _t == selected_ticker:
         continue
     try:
         all_data[_t] = load_ticker(_t, period, n_states)
