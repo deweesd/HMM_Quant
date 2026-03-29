@@ -20,7 +20,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import warnings
 warnings.filterwarnings("ignore")
 
-import streamlit.components.v1 as components
 
 import numpy  as np
 import pandas as pd
@@ -138,6 +137,12 @@ with st.sidebar:
                 )
                 rows.append({"gain_pct": gp, "sell_fraction": sf / 100.0})
             user_exit_ladder = rows
+
+    st.divider()
+    _light = st.toggle("Light mode", value=st.session_state.light_mode, key="light_mode_toggle")
+    if _light != st.session_state.light_mode:
+        st.session_state.light_mode = _light
+        st.rerun()
 
     st.caption("Data via yfinance · Model via hmmlearn")
     st.caption("For educational purposes only.")
@@ -951,25 +956,22 @@ def _section_label(text: str) -> None:
 
 
 # ── BTG Traders navbar ────────────────────────────────────────────────────────
-_btn_icon = "☀️" if st.session_state.light_mode else "🌙"
 _live_cls     = "btg-nav-link btg-nav-active" if _active_tab == "live"     else "btg-nav-link"
 _backtest_cls = "btg-nav-link btg-nav-active" if _active_tab == "backtest" else "btg-nav-link"
 _about_cls    = "btg-nav-link btg-nav-active" if _active_tab == "about"    else "btg-nav-link"
 st.markdown(f"""
 <nav class="btg-navbar">
-  <span class="btg-brand" data-tab="live">
+  <a class="btg-brand" href="?tab=live" target="_self">
     <div class="btg-brand-mark">B</div>
     <span class="btg-brand-name">BTG <span class="btg-brand-red">Traders</span></span>
-  </span>
+  </a>
   <div class="btg-nav-links">
-    <span class="{_live_cls}"     data-tab="live">Live</span>
-    <span class="{_backtest_cls}" data-tab="backtest">Backtest</span>
-    <span class="{_about_cls}"    data-tab="about">About</span>
+    <a class="{_live_cls}"     href="?tab=live"     target="_self">Live</a>
+    <a class="{_backtest_cls}" href="?tab=backtest" target="_self">Backtest</a>
+    <a class="{_about_cls}"    href="?tab=about"    target="_self">About</a>
     <span class="btg-nav-link btg-nav-disabled">Account</span>
   </div>
   <div class="btg-nav-actions">
-    <button class="btg-icon-btn" id="hmmThemeBtn"
-            onclick="toggleHmmTheme()" title="Toggle theme">{_btn_icon}</button>
     <a href="https://github.com/deweesd" target="_blank"
        class="btg-icon-btn" title="GitHub">
       <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
@@ -1007,22 +1009,6 @@ st.markdown("""
           title="Dismiss">✕</button>
 </div>
 """, unsafe_allow_html=True)
-
-# ── JS nav injector — runs inside same-origin iframe so window.parent.document is accessible ──
-components.html("""
-<script>
-(function() {
-  if (window.parent.__btgNavInit) return;
-  window.parent.__btgNavInit = true;
-  window.parent.document.addEventListener('click', function(e) {
-    var el = e.target.closest('[data-tab]');
-    if (el && !el.classList.contains('btg-nav-disabled')) {
-      window.parent.location.href = '?tab=' + el.getAttribute('data-tab');
-    }
-  }, true);
-})();
-</script>
-""", height=0, scrolling=False)
 
 # ── Load focused ticker first, then remaining tickers ──────────────────────────
 # Loads the selected ticker immediately so the Live tab renders fast.
