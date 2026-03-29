@@ -20,6 +20,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import warnings
 warnings.filterwarnings("ignore")
 
+import streamlit.components.v1 as components
+
 import numpy  as np
 import pandas as pd
 import streamlit as st
@@ -1005,6 +1007,22 @@ st.markdown("""
           title="Dismiss">✕</button>
 </div>
 """, unsafe_allow_html=True)
+
+# ── JS nav injector — runs inside same-origin iframe so window.parent.document is accessible ──
+components.html("""
+<script>
+(function() {
+  if (window.parent.__btgNavInit) return;
+  window.parent.__btgNavInit = true;
+  window.parent.document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-tab]');
+    if (el && !el.classList.contains('btg-nav-disabled')) {
+      window.parent.location.href = '?tab=' + el.getAttribute('data-tab');
+    }
+  }, true);
+})();
+</script>
+""", height=0, scrolling=False)
 
 # ── Load focused ticker first, then remaining tickers ──────────────────────────
 # Loads the selected ticker immediately so the Live tab renders fast.
