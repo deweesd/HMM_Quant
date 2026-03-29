@@ -16,6 +16,7 @@ Tabs
 
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from zoneinfo import ZoneInfo
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -139,6 +140,27 @@ with st.sidebar:
             user_exit_ladder = rows
 
     st.divider()
+    _TZ_OPTIONS = {
+        "UTC":                    "UTC",
+        "Pacific  (PST/PDT)":     "America/Los_Angeles",
+        "Mountain (MST/MDT)":     "America/Denver",
+        "Central  (CST/CDT)":     "America/Chicago",
+        "Eastern  (EST/EDT)":     "America/New_York",
+        "London   (GMT/BST)":     "Europe/London",
+        "Paris / Berlin (CET)":   "Europe/Paris",
+        "Dubai    (GST)":         "Asia/Dubai",
+        "Singapore (SGT)":        "Asia/Singapore",
+        "Tokyo    (JST)":         "Asia/Tokyo",
+        "Sydney   (AEST/AEDT)":   "Australia/Sydney",
+    }
+    _tz_label = st.selectbox(
+        "Display Timezone",
+        list(_TZ_OPTIONS.keys()),
+        index=1,          # defaults to Pacific
+        key="tz_select",
+    )
+    _user_tz = ZoneInfo(_TZ_OPTIONS[_tz_label])
+
     _light = st.toggle("Light mode", value=st.session_state.light_mode, key="light_mode_toggle")
     if _light != st.session_state.light_mode:
         st.session_state.light_mode = _light
@@ -1021,7 +1043,8 @@ except Exception as e:
 
 last_refreshed = get_last_refreshed(selected_ticker)
 if last_refreshed:
-    st.caption(f"Data as of {last_refreshed}")
+    _local_dt = last_refreshed.astimezone(_user_tz)
+    st.caption(f"Data as of {_local_dt.strftime('%H:%M %Z')} ({_local_dt.strftime('%Y-%m-%d')})")
 
 for _t in TICKERS:
     if _t == selected_ticker:

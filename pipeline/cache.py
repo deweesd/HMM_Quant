@@ -10,7 +10,7 @@ Public API
 ──────────
   write_cache(ticker, period, n_states, data)
   read_cache(ticker, period, n_states)  → dict | None
-  get_last_refreshed(ticker)            → str | None
+  get_last_refreshed(ticker)            → datetime | None
 """
 
 import json
@@ -65,14 +65,21 @@ def read_cache(ticker: str, period: str, n_states: int) -> Optional[dict]:
         return None
 
 
-def get_last_refreshed(ticker: str) -> Optional[str]:
-    """Return 'HH:MM UTC' string of last refresh for ticker, or None."""
+def get_last_refreshed(ticker: str) -> Optional[datetime]:
+    """Return UTC datetime of last refresh for ticker, or None."""
     mpath = _manifest_path()
     if not os.path.exists(mpath):
         return None
     with open(mpath) as f:
         manifest = json.load(f)
-    return manifest.get(ticker)
+    raw = manifest.get(ticker)
+    if not raw:
+        return None
+    try:
+        return datetime.fromisoformat(raw)
+    except ValueError:
+        # Legacy entries stored as "HH:MM UTC" — treat as today UTC
+        return None
 
 
 def _update_manifest(ticker: str) -> None:
@@ -84,7 +91,7 @@ def _update_manifest(ticker: str) -> None:
                 manifest = json.load(f)
         except Exception:
             manifest = {}
-    manifest[ticker] = datetime.now(timezone.utc).strftime("%H:%M UTC")
+    manifest[ticker] = datetime.now(timezone.utc).isoformat()
     dir_ = os.path.dirname(mpath)
     with tempfile.NamedTemporaryFile("w", dir=dir_, delete=False, suffix=".tmp") as tmp:
         json.dump(manifest, tmp)
