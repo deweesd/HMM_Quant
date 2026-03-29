@@ -814,6 +814,14 @@ function toggleHmmTheme() {
     btn.textContent = document.body.classList.contains('hmm-light') ? '☀️' : '🌙';
   }
 }
+
+// Tab navigation via event delegation — inline onclick is stripped by Streamlit
+document.addEventListener('click', function(e) {
+  var el = e.target.closest('[data-tab]');
+  if (el && !el.classList.contains('btg-nav-disabled')) {
+    window.location.href = '?tab=' + el.getAttribute('data-tab');
+  }
+}, true);
 </script>
 """
 

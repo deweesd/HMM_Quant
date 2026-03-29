@@ -955,14 +955,14 @@ _backtest_cls = "btg-nav-link btg-nav-active" if _active_tab == "backtest" else 
 _about_cls    = "btg-nav-link btg-nav-active" if _active_tab == "about"    else "btg-nav-link"
 st.markdown(f"""
 <nav class="btg-navbar">
-  <span class="btg-brand" onclick="window.location.href='?tab=live'" style="cursor:pointer">
+  <span class="btg-brand" data-tab="live">
     <div class="btg-brand-mark">B</div>
     <span class="btg-brand-name">BTG <span class="btg-brand-red">Traders</span></span>
   </span>
   <div class="btg-nav-links">
-    <span class="{_live_cls}"     onclick="window.location.href='?tab=live'"     style="cursor:pointer">Live</span>
-    <span class="{_backtest_cls}" onclick="window.location.href='?tab=backtest'" style="cursor:pointer">Backtest</span>
-    <span class="{_about_cls}"    onclick="window.location.href='?tab=about'"    style="cursor:pointer">About</span>
+    <span class="{_live_cls}"     data-tab="live">Live</span>
+    <span class="{_backtest_cls}" data-tab="backtest">Backtest</span>
+    <span class="{_about_cls}"    data-tab="about">About</span>
     <span class="btg-nav-link btg-nav-disabled">Account</span>
   </div>
   <div class="btg-nav-actions">
