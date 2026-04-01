@@ -1091,7 +1091,7 @@ if _active_tab == "live":
   </div>
 </div>
 """, unsafe_allow_html=True)
-        st.plotly_chart(chart, width="stretch", key="main_chart")
+        st.plotly_chart(chart, use_container_width=True, key="main_chart")
         render_conf_panel(latest)
 
     # ── Backtest Snapshot ─────────────────────────────────────────────────────
@@ -1171,7 +1171,7 @@ elif _active_tab == "backtest":
   </div>
 </div>
 """, unsafe_allow_html=True)
-        st.plotly_chart(eq_fig, width="stretch", key="eq_chart")
+        st.plotly_chart(eq_fig, use_container_width=True, key="eq_chart")
 
         # Trade log
         n_trades  = len(trades_df)
@@ -1196,7 +1196,7 @@ elif _active_tab == "backtest":
                     return ""
             st.dataframe(
                 trades_df.style.map(color_ret, subset=["Return %"]),
-                width="stretch",
+                use_container_width=True,
                 hide_index=False,
             )
     except Exception as e:
@@ -1405,6 +1405,6 @@ Circulating supply figures can vary across data providers.
         res = all_data[selected_ticker]
         st.dataframe(
             style_summary(res["state_summary"]),
-            width="stretch",
+            use_container_width=True,
             hide_index=True,
         )
