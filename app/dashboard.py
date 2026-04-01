@@ -174,16 +174,15 @@ with st.sidebar:
 # CACHED DATA LOADERS
 # ══════════════════════════════════════════════════════════════════════════════
 
-@st.cache_data(ttl=4200, show_spinner=False)
+@st.cache_data(ttl=4200, show_spinner="Computing HMM pipeline…")
 def load_ticker(ticker: str, period: str, n_states: int) -> dict:
     """Load full pipeline: disk cache first, live compute fallback."""
     cached = read_cache(ticker, period, n_states)
     if cached is not None:
         return cached
-    with st.spinner(f"Loading {ticker} — first run, this takes ~30s…"):
-        data = get_ticker_data(ticker=ticker, period=period, n_states=n_states)
-        write_cache(ticker, period, n_states, data)
-        return data
+    data = get_ticker_data(ticker=ticker, period=period, n_states=n_states)
+    write_cache(ticker, period, n_states, data)
+    return data
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -1032,27 +1031,21 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Load focused ticker first, then remaining tickers ──────────────────────────
-# Loads the selected ticker immediately so the Live tab renders fast.
-# Background tickers load after, hitting cache on repeat visits.
+# ── Load all tickers with visible progress ─────────────────────────────────────
 all_data = {}
-try:
-    all_data[selected_ticker] = load_ticker(selected_ticker, period, n_states)
-except Exception as e:
-    st.warning(f"Could not load {selected_ticker}: {e}")
+with st.status("Loading market data…", expanded=False) as _load_status:
+    for _t in [selected_ticker] + [t for t in TICKERS if t != selected_ticker]:
+        st.write(f"Fetching {TICKER_LABELS[_t]}…")
+        try:
+            all_data[_t] = load_ticker(_t, period, n_states)
+        except Exception as e:
+            st.warning(f"Could not load {_t}: {e}")
+    _load_status.update(label="Market data ready ✓", state="complete", expanded=False)
 
 last_refreshed = get_last_refreshed(selected_ticker)
 if last_refreshed:
     _local_dt = last_refreshed.astimezone(_user_tz)
     st.caption(f"Data as of {_local_dt.strftime('%H:%M %Z')} ({_local_dt.strftime('%Y-%m-%d')})")
-
-for _t in TICKERS:
-    if _t == selected_ticker:
-        continue
-    try:
-        all_data[_t] = load_ticker(_t, period, n_states)
-    except Exception as e:
-        st.warning(f"Could not load {_t}: {e}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 1 — DASHBOARD
